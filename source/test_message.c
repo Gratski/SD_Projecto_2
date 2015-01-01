@@ -38,39 +38,7 @@ void print_message(struct message_t *msg) {
 
 int testResult() {
 	int result, size, res;
-	short opcode, c_type;
-	char *msg_str = NULL;
-	struct message_t *msg;
-
-	printf("Módulo mensagem -> teste - Result:");
-
-	msg = (struct message_t *) malloc(sizeof(struct message_t));
-
-	msg->opcode = OC_PUT;
-	msg->c_type = CT_RESULT;
-	msg->content.result = 1;
-	size = message_to_buffer(msg, &msg_str);
-
-	opcode = htons(msg->opcode);
-	c_type = htons(msg->c_type);
-	res = htonl(msg->content.result);
-	result = memcmp(msg_str, &opcode, 2) == 0 &&
-		 memcmp(msg_str + 2, &c_type, 2) == 0 &&
-		 memcmp(msg_str + 4, &res, 4) == 0;
-
-	free_message(msg);
-
-	msg = buffer_to_message(msg_str, size);
-
-	result = result && msg->opcode == OC_PUT &&
-			   msg->c_type == CT_RESULT &&
-			   msg->content.result == 1;
-
-	free(msg_str);
-	//print_message(msg);
-	free_message(msg);
-
-	printf(" %s\n", result ? "passou":"não passou");
+	
 	return result;
 }
 
@@ -304,8 +272,6 @@ int testInvalida() {
 int main() {
 	int score = 0;
 
-	printf("\nIniciando o teste do módulo message\n");
-
 	score += testResult();
 
 	score += testKey();
@@ -318,7 +284,6 @@ int main() {
 
 	score += testInvalida();
 
-	printf("Resultados do teste do módulo message: %d em 6\n\n",score);
 
 	return score;
 }
