@@ -5,11 +5,15 @@ C_FILES = source
 H_FILES = include
 CFLAGS = -g -Wall -I$(H_FILES)
 
+default: all
+
+table: $(O_FILES)/table.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
+	$(CC) $(FLAGS) -o table $(O_FILES)/table.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
+
 all: test_data test_entry test_list
 
 clean:
 	rm -f object/*.o && rm -f test_data && rm -f test_entry && rm -f test_list
-
 
 
 test_data: $(O_FILES)/test_data.o $(O_FILES)/data.o
@@ -42,3 +46,6 @@ $(O_FILES)/entry.o: $(C_FILES)/entry.c $(H_FILES)/data.h $(H_FILES)/entry.h
 
 $(O_FILES)/list.o: $(C_FILES)/list.c $(H_FILES)/list-private.h $(H_FILES)/list.h
 	$(CC) $(CFLAGS) -c $(C_FILES)/list.c -o $(O_FILES)/list.o
+
+$(O_FILES)/table.o: $(C_FILES)/table.c $(H_FILES)/table.h $(H_FILES)/data.h
+	$(CC) $(FLAGS) -c $(C_FILES)/table.c -o $(O_FILES)/table.o
