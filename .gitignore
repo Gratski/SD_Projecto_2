@@ -1,0 +1,7 @@
+*.o
+object/*.o
+test_data
+test_entry
+test_list
+test_table
+
