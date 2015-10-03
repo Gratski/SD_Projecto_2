@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data.h"
+#include "table.h"
 
 
-int main(){
-	return 1;
+struct table_t *table_create(int n) {
+	return NULL;
 }
