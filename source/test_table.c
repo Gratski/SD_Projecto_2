@@ -7,6 +7,7 @@
 #include "data.h"
 #include "entry.h"
 #include "table.h"
+#include "table-private.h"
 
 int testTabelaVazia() {
 	struct table_t *table = table_create(5);
@@ -279,22 +280,6 @@ int main() {
 	int score = 0;
 
 	printf("Iniciando o teste do modulo table\n");
-
-	score += testTabelaVazia();
-
-	score += testPutInexistente();
-
-	score += testPutExistente();
-
-	score += testPutCond();
-
-	score += testDelInexistente();
-
-	score += testDelExistente();
-
-	score += testGetKeys();
-
-	printf("Resultados do teste do modulo table: %d/7\n",score);
 
 	return score;
 }
