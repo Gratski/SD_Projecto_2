@@ -7,4 +7,6 @@ struct table_t{
 	struct list_t **places;
 };
 
+int hashcode(struct table_t *table, char *key);
+
 #endif
