@@ -6,14 +6,13 @@
 #include "table-private.h"
 
 int hashcode(struct table_t *table, char *key){
-
-	int val = 0;
+	int i, val = 0;
+	int key_length = strlen(key);
 
 	//se tem mais que 6
-	if ( strlen(key) <= 6 )
+	if ( key_length <= 6 )
 	{
-		int i;
-		for (i = 0; i < strlen(key); ++i)
+		for (i = 0; i < key_length; ++i)
 			val += 0 + key[i];
 	}
 	//se tem mais que 6 letras
@@ -21,7 +20,8 @@ int hashcode(struct table_t *table, char *key){
 	{
 		int i;
 		for (i = 0; i < 3; i++)
-			val += key[i];
+		//	val += key[i];
+			val += (int) key[i];
 	/*
 		val += key[0];
 		val += key[1];
@@ -29,7 +29,8 @@ int hashcode(struct table_t *table, char *key){
 	*/
 
 		for (i = 3; i > 0; i--)
-			val += key[strlen(key) - i];
+		//	val += key[strlen(key) - i];
+			val += (int) key[key_length - i];
 
 	/*
 		val += key[strlen(key) - 3];
@@ -38,7 +39,7 @@ int hashcode(struct table_t *table, char *key){
 	*/
 	}
 
-	return (val % table->num_places);
+	return val % table->num_places;
 
 }
 
