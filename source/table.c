@@ -29,8 +29,7 @@ int hashcode(struct table_t *table, char *key){
 		val += key[strlen(key) - 1];
 	}
 
-	val = val % table->num_places;
-	return val;
+	return (val % table->num_places);
 
 }
 
@@ -95,7 +94,7 @@ int table_update(struct table_t *table, char *key, struct data_t *value){
 	if ( table == NULL || key == NULL || value == NULL )
 		return -1;
 
-	//obtem hashcode
+		//obtem hashcode
 	int pos = hashcode(table, key);
 
 	struct entry_t *entry = list_get( table->places[pos] ,key);
@@ -161,9 +160,32 @@ int table_size(struct table_t *table){
 
 //faltam estas duas
 char **table_get_keys(struct table_t *table){
-	return NULL;
+	
+	int i = 0;
+	int index = 0;
+	char **keys = (char **) malloc( (sizeof(char *) * table->size) + 1 );
+	for(i=0; i<table->size; i++){
+		
+		if( table->places[i] != NULL ){
+			char **l = list_get_keys(table->places[i]);
+			int j;
+			for(j=0; l[j]!=NULL; j++){
+				keys[index] = strdup(l[j]);
+				index++;
+			}
+			list_free_keys(l);
+		}
+	}
+	return keys;
 }
 
 void table_free_keys(char **keys){
-	return;
+	
+	int i;
+	for(i=0; keys[i]!=NULL; i++)
+	{
+		free(keys[i]);
+	}
+	free(keys);
+
 }
