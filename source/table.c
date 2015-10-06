@@ -19,24 +19,13 @@ int hashcode(struct table_t *table, char *key){
 	else
 	{
 		int i;
+		//soma as 3 primeiras
 		for (i = 0; i < 3; i++)
-		//	val += key[i];
 			val += (int) key[i];
-	/*
-		val += key[0];
-		val += key[1];
-		val += key[2];
-	*/
 
+		//soma as 3 ultimas
 		for (i = 3; i > 0; i--)
-		//	val += key[strlen(key) - i];
 			val += (int) key[key_length - i];
-
-	/*
-		val += key[strlen(key) - 3];
-		val += key[strlen(key) - 2];
-		val += key[strlen(key) - 1];
-	*/
 	}
 
 	return val % table->num_places;
