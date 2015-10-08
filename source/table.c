@@ -57,11 +57,8 @@ void table_destroy(struct table_t *table){
 	int i;
 
 	for (i = 0; i < size; ++i)
-	{
-		//se o place ja tem lista
-		if ( table->places[i] != NULL )
-			list_destroy(table->places[i]);
-	}
+		list_destroy(table->places[i]);
+
 	free(table);
 }
 
