@@ -7,7 +7,6 @@
 #include "data.h"
 #include "entry.h"
 #include "table.h"
-#include "table-private.h"
 
 int testTabelaVazia() {
 	struct table_t *table = table_create(5);
@@ -112,7 +111,51 @@ int testPutExistente() {
 	return result;
 }
 
+int testPutCond() {
+	int result, i;
+	struct table_t *table = table_create(5);
+	char *key[1024];
+	struct data_t *data[1024], *d;
 
+	for(i=0; i<1024; i++) {
+		key[i] = (char*)malloc(16*sizeof(char));
+		sprintf(key[i],"a/key/b-%d",i);
+		data[i] = data_create2(strlen(key[i])+1,strdup(key[i]));
+
+		table_put(table,key[i],data[i]);
+	}
+
+
+	assert(table_size(table) == 1024);
+	result = (table_size(table) == 1024);
+
+	d = data_create2(strlen("256")+1,strdup("256"));
+	table_update(table,key[256],d);
+	data_destroy(d);
+
+	assert(table_size(table) == 1024);
+	result = result && (table_size(table) == 1024);
+
+	for(i=0; i<1024; i++) {
+		d = table_get(table,key[i]);
+
+		result = result && (d->datasize == data[i]->datasize &&
+                                    memcmp(d->data,data[i]->data,d->datasize) == 0 &&
+                                    d->data != data[i]->data);
+
+		data_destroy(d);
+	}
+
+	for(i=0; i<1024; i++) {
+		free(key[i]);
+		data_destroy(data[i]);
+	}
+
+	table_destroy(table);
+
+	printf("Modulo table -> teste put condicional: %s\n",result?"passou":"nao passou");
+	return result;
+}
 
 int testDelInexistente() {
 	int result, i;
@@ -236,6 +279,22 @@ int main() {
 	int score = 0;
 
 	printf("Iniciando o teste do modulo table\n");
+
+	score += testTabelaVazia();
+
+	score += testPutInexistente();
+
+	score += testPutExistente();
+
+	score += testPutCond();
+
+	score += testDelInexistente();
+
+	score += testDelExistente();
+
+	score += testGetKeys();
+
+	printf("Resultados do teste do modulo table: %d/7\n",score);
 
 	return score;
 }
