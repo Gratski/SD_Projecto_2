@@ -84,7 +84,7 @@ int table_put(struct table_t *table, char *key, struct data_t *value){
 	}
 
 	if( res == 0 )
-		table->size = table->size + 1;
+		table->size++;
 
 	return res;
 }
