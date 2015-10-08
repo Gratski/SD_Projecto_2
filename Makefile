@@ -10,12 +10,16 @@ default: all
 all: test_data test_entry test_list test_table
 
 clean:
-	rm -f object/*.o && rm -f test_table && rm -f test_data && rm -f test_entry && rm -f test_list
+	rm -f object/*.o && rm -f test_message && rm -f test_table && rm -f test_data && rm -f test_entry && rm -f test_list
+
 
 
 test_table: $(O_FILES)/test_table.o $(O_FILES)/table.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
 	$(CC) $(CFLAGS) -o test_table $(O_FILES)/test_table.o $(O_FILES)/table.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
 
+#TODO
+test_message: $(O_FILES)/test_message.o $(O_FILES)/message.o
+	$(CC) $(CFLAGS) -o test_message $(O_FILES)/test_table.o $(O_FILES)/table.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
 
 test_data: $(O_FILES)/test_data.o $(O_FILES)/data.o
 	$(CC) $(CFLAGS) -o test_data $(O_FILES)/test_data.o $(O_FILES)/data.o
