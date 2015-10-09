@@ -32,14 +32,13 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		size += INT_SIZE;
 		size += msg->content.data->datasize;
 
-		*msg_buf = (char *) malloc( size );
+		*msg_buf = (char *) malloc(size);
 
-		int datasize = htonl(msg->content.data->datasize);
-		memcpy( *msg_buf + offset, &datasize, 4 );
-		offset += 4;
+		int datasize_htonl = htonl(msg->content.data->datasize);
+		memcpy(*msg_buf + offset, &datasize_htonl, INT_SIZE);
+		offset += INT_SIZE;
 
-		datasize = msg->content.data->datasize;
-		memcpy( *msg_buf + offset, msg->content.data->data, datasize );
+		memcpy(*msg_buf + offset, msg->content.data->data, msg->content.data->datasize);
 	}
 
 	else if( c_type == CT_KEY ){
@@ -99,7 +98,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		// keysize
 		int keysize_htons = htons(keysize);
-		memcpy(*msg_buf + offset, &keysize, SHORT_SIZE);
+		memcpy(*msg_buf + offset, &keysize_htons, SHORT_SIZE);
 		offset += SHORT_SIZE;
 
 		// key em si
@@ -169,15 +168,10 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		datasize = ntohl(datasize);
 
 		offset += INT_SIZE;
-		void *data = (void *) malloc(datasize);
-		memcpy(data, msg_buf + offset, datasize);
-		msg->content.data = data_create2(datasize, data);
-
-/*
 		msg->content.data = (struct data_t *) malloc( sizeof(struct data_t) );
 		msg->content.data->datasize = datasize;
+		msg->content.data->data = (void *) malloc(datasize);
 		memcpy(msg->content.data->data, msg_buf + offset, datasize);
-*/
 	}
 
 	// se eh key
@@ -221,35 +215,33 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	// se eh entry
 	else if( c_type == CT_ENTRY )
 	{
-
 		// cria uma entry em union
-		msg->content.entry = ( struct entry_t * ) malloc( sizeof( struct entry_t ) );
+		//msg->content.entry = (struct entry_t *) malloc(sizeof( struct entry_t ));
 
 		// keysize
 		int keysize;
-		memcpy( &keysize, msg_buf + offset, 4 );
-		keysize = ntohl(keysize);
+		memcpy(&keysize, msg_buf + offset, SHORT_SIZE);
+		keysize = ntohs(keysize);
 
-		offset += 4;
-
-		// entry key
-		memcpy(msg->content.entry->key , msg_buf + offset, keysize);
-
-		offset += keysize;
+		// key
+		offset += SHORT_SIZE;
+		char *key = (char*) malloc(keysize);
+		memcpy(key, msg_buf + offset, keysize);
 
 		// datasize
-		int datasize;
-		memcpy( &datasize, msg_buf + offset, 4 );
-		datasize = ntohl(datasize);
-
-		offset += 4;
+		int data_size;
+		offset += keysize;
+		memcpy(&data_size, msg_buf + offset, INT_SIZE);
+		data_size = ntohl(data_size);
 
 		// data
-		char *k = (char *) malloc( datasize );
-		memcpy( k, msg_buf + offset, datasize );
+		offset += 4;
+		void *entry_data = malloc(data_size);
+		memcpy(entry_data, msg_buf + offset, data_size);
 
-		// create data com data_create2
-		msg->content.entry->value = data_create2(datasize, k);
+		// criar entry
+		struct data_t *data = data_create2(data_size, entry_data);
+		msg->content.entry = entry_create(key, data);
 	}
 	else{
 		return NULL;

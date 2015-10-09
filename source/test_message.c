@@ -129,23 +129,26 @@ int testKey() {
 int testValue() {
 	int result, size;
 	char *msg_str = NULL;
-	struct message_t *msg = (struct message_t*)malloc(sizeof(struct message_t));
+	struct message_t *msg = (struct message_t*) malloc(sizeof(struct message_t));
 	msg->opcode = OC_PUT;
 	msg->c_type = CT_VALUE;
-	msg->content.data = data_create2(strlen("abc")+1,strdup("abc"));
+	msg->content.data = data_create2(strlen("abc")+1, "abc");
+
 	size = message_to_buffer(msg,&msg_str);
 
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
 	int datasize = msg->content.data->datasize;
 	int datasize_conv = htonl(datasize);
-	char comp_data[datasize];
+	char *comp_data = (char *) malloc(datasize);
 	memcpy(comp_data, msg_str+8, datasize);
+
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
 		 	  memcmp(msg_str+4, &datasize_conv, 4) == 0 &&
-		 	  memcmp(msg_str+8, &comp_data, datasize) == 0);
+		 	  memcmp(msg_str+8, comp_data, datasize) == 0);
 
+	free(comp_data);
 	free_message(msg);
 
 	msg = buffer_to_message(msg_str, size);
@@ -158,8 +161,8 @@ int testValue() {
 	free(msg_str);
 	print_message(msg);
 	free_message(msg);
-
 	printf("Modulo mensagem -> teste - Value: %s\n",result?"passou":"nao passou");
+
 	return result;
 }
 
@@ -340,15 +343,15 @@ int main() {
 
 	score += testValue();
 
-	score += testKey();
+	//score += testKey();
 
 	//score += testEntrySemTS();
 
-	score += testEntry();
+	//score += testEntry();
 
-	score += testKeys();
+	//score += testKeys();
 
-	score += testInvalida();
+	//score += testInvalida();
 
 
 	printf("Resultados do teste do modulo message: %d/7\n",score);
