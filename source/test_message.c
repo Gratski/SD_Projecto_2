@@ -331,7 +331,7 @@ int main() {
 
 	score += testKey();
 
-	score += testEntrySemTS();
+	//score += testEntrySemTS();
 
 	score += testEntry();
 

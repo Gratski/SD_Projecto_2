@@ -19,7 +19,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 	int size = SHORT_SIZE + SHORT_SIZE;
 	int offset = size;
 
-	// testar c_type da mensagem
+	/* Testar c_type da mensagem */
 	if ( c_type == CT_RESULT ){
 		size += INT_SIZE;
 		*msg_buf = (char *) malloc( size );
@@ -28,7 +28,6 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		memcpy(*msg_buf + offset, &result, INT_SIZE);
 	}
 
-	// se eh value
 	else if( c_type == CT_VALUE){
 		size += INT_SIZE;
 		size += msg->content.data->datasize;
@@ -43,7 +42,6 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		memcpy( *msg_buf + offset, msg->content.data->data, datasize );
 	}
 
-	// se eh key
 	else if( c_type == CT_KEY ){
 		int keysize = strlen(msg->content.key);
 		size += INT_SIZE;
@@ -58,11 +56,10 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		memcpy(*msg_buf + offset, msg->content.key, keysize);
 	}
 
-	// se eh keys
 	else if( c_type == CT_KEYS ){
-
-		size += 4;
+		size += INT_SIZE;
 		int i;
+
 		for (i = 0; msg->content.keys[i] != NULL ; ++i)
 		{
 			size += 4;
@@ -73,7 +70,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		// numero de keys
 		int nkeys = htonl(i);
-		memcpy( msg_buf + offset, &nkeys, 4 );
+		memcpy(*msg_buf + offset, &nkeys, 4);
 		offset += 4;
 
 
@@ -81,18 +78,15 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		{
 			int presize = strlen(msg->content.keys[i]);
 			int keysize = htonl( presize );
-			memcpy( msg_buf + offset, &keysize, 4 );
+			memcpy(*msg_buf + offset, &keysize, 4);
 			offset += 4;
 
-			memcpy( msg_buf + offset, msg->content.keys[i], presize );
+			memcpy(*msg_buf + offset, msg->content.keys[i], presize );
 			offset += presize;
-
 		}
 	}
 
-	// se eh entry
 	else if( c_type == CT_ENTRY ){
-
 		//para keysize e key em si
 		size += 4;
 		size += strlen(msg->content.entry->key);
@@ -106,19 +100,19 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		// keysize
 		int keysize = strlen(msg->content.entry->key);
 		keysize = htonl(keysize);
-		memcpy( msg_buf + offset, &keysize, 4 );
+		memcpy(*msg_buf + offset, &keysize, 4 );
 		offset += 4;
 
 		// key em si
-		memcpy( msg_buf + offset, msg->content.entry->key, strlen(msg->content.entry->key) );
+		memcpy(*msg_buf + offset, msg->content.entry->key, strlen(msg->content.entry->key));
 		offset += strlen(msg->content.entry->key);
 
 		int pre_datasize = msg->content.entry->value->datasize;
 		int datasize = htonl(pre_datasize);
-		memcpy( msg_buf + offset, &datasize, 4 );
+		memcpy(*msg_buf + offset, &datasize, 4);
 		offset += 4;
 
-		memcpy( msg_buf + offset, msg->content.entry->value->data, pre_datasize );
+		memcpy(*msg_buf + offset, msg->content.entry->value->data, pre_datasize);
 	}
 	// se c_type nao conhecido
 	else
@@ -130,7 +124,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 	//c_type
 	c_type = htons(c_type);
-	memcpy( *msg_buf + SHORT_SIZE, &c_type, 2 );
+	memcpy(*msg_buf + SHORT_SIZE, &c_type, 2);
 
 	return size;
 
