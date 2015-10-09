@@ -11,7 +11,7 @@
 
 int message_to_buffer(struct message_t *msg, char **msg_buf){
 	if (msg == NULL)
-		return NULL;
+		return -1;
 
 	short opcode = msg->opcode;
 	short c_type = msg->c_type;
@@ -85,25 +85,25 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		}
 	}
 
-	else if( c_type == CT_ENTRY ){
-		//para keysize e key em si
-		size += 4;
-		size += strlen(msg->content.entry->key);
+	else if(c_type == CT_ENTRY){
+		int keysize = strlen(msg->content.entry->key);
 
+		//para keysize e key em si
+		size += SHORT_SIZE;
+		size += keysize;
 		//para datasize e data em si
-		size += 4;
+		size += INT_SIZE;
 		size += msg->content.entry->value->datasize;
 
-		*msg_buf = (char *) malloc( size );
+		*msg_buf = (char *) malloc(size);
 
 		// keysize
-		int keysize = strlen(msg->content.entry->key);
-		keysize = htonl(keysize);
-		memcpy(*msg_buf + offset, &keysize, 4 );
-		offset += 4;
+		int keysize_htons = htons(keysize);
+		memcpy(*msg_buf + offset, &keysize, SHORT_SIZE);
+		offset += SHORT_SIZE;
 
 		// key em si
-		memcpy(*msg_buf + offset, msg->content.entry->key, strlen(msg->content.entry->key));
+		memcpy(*msg_buf + offset, msg->content.entry->key, keysize);
 		offset += strlen(msg->content.entry->key);
 
 		int pre_datasize = msg->content.entry->value->datasize;
@@ -155,24 +155,29 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	{
 		//le result
 		int result;
-		memcpy( &result, msg_buf + offset, 4 );
+		memcpy( &result, msg_buf + offset, INT_SIZE);
 		result = ntohl(result);
 
 		msg->content.result = result;
+		memcpy(&(msg->content.result), &result, INT_SIZE);
 	}
 
 	// se eh value
 	else if( c_type == CT_VALUE ) {
-
 		int datasize;
-		memcpy( &datasize, msg_buf + offset, 4 );
+		memcpy(&datasize, msg_buf + offset, INT_SIZE);
 		datasize = ntohl(datasize);
 
-		offset += 4;
+		offset += INT_SIZE;
+		void *data = (void *) malloc(datasize);
+		memcpy(data, msg_buf + offset, datasize);
+		msg->content.data = data_create2(datasize, data);
 
+/*
 		msg->content.data = (struct data_t *) malloc( sizeof(struct data_t) );
 		msg->content.data->datasize = datasize;
-		memcpy( msg->content.data->data, msg_buf + offset, datasize );
+		memcpy(msg->content.data->data, msg_buf + offset, datasize);
+*/
 	}
 
 	// se eh key
