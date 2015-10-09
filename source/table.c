@@ -37,15 +37,17 @@ struct table_t *table_create(int n) {
 	if (n < 0)
 		return NULL;
 
-	struct table_t *t = ( struct table_t * ) malloc(sizeof( struct table_t ));
-	t->num_places = n;
-	t->places = (struct list_t **) malloc( sizeof( struct list_t *) * n );
+	struct table_t *table = ( struct table_t * ) malloc(sizeof( struct table_t ));
+
+	table->size = 0;
+	table->num_places = n;
+	table->places = (struct list_t **) malloc( sizeof( struct list_t *) * n );
 
 	int i;
 	for (i = 0; i < n; ++i)
-		t->places[i] = NULL;
+		table->places[i] = NULL;
 
-	return t;
+	return table;
 }
 
 
@@ -71,17 +73,11 @@ int table_put(struct table_t *table, char *key, struct data_t *value){
 	int pos = hashcode(table, key);
 	int res;
 
-	// se o place ainda nao tem nada
+	// bucket sem lista
 	if ( table->places[pos] == NULL )
-	{
 		table->places[pos] = list_create();
-		res = list_add(table->places[pos], entry);
-	}
-	// se o place jah tem lista
-	else
-	{
-		res = list_add(table->places[pos], entry);
-	}
+
+	res = list_add(table->places[pos], entry);
 
 	if( res == 0 )
 		table->size++;
@@ -94,7 +90,6 @@ int table_update(struct table_t *table, char *key, struct data_t *value){
 	if ( table == NULL || key == NULL || value == NULL )
 		return -1;
 
-	//obtem hashcode
 	int pos = hashcode(table, key);
 
 	struct entry_t *entry = list_get( table->places[pos] ,key);
@@ -147,7 +142,7 @@ int table_del(struct table_t *table, char *key){
 		// se a list em place ficou vazia
 		if( list->size == 0 )
 		{
-			list_destroy(list);
+			//list_destroy(list);
 			table->places[pos] = NULL;
 		}
 	}

@@ -77,6 +77,7 @@ int testPutExistente() {
 		table_put(table,key[i],data[i]);
 	}
 
+
 	assert(table_size(table) == 1024);
 	result = (table_size(table) == 1024);
 
@@ -95,10 +96,26 @@ int testPutExistente() {
 			result = result && (d->datasize == data[i]->datasize &&
         	                            memcmp(d->data,data[i]->data,d->datasize) == 0 &&
         	                            d->data != data[i]->data);
+/*
+			printf("%s\n", d->data);
+			printf("%s\n", data[i]->data);
+			printf("%d\n", d->datasize == data[i]->datasize);
+			printf("%d\n", memcmp(d->data,data[i]->data,d->datasize) == 0);
+			printf("%d\n", d->data != data[i]->data);
+			printf("result: %d\n", result);
+			*/
+		}
+
+		if(d->data == data[i]->data) {
+			printf("!!!! %d\n", i);
+			printf("%d\n", d->datasize == data[i]->datasize);
+			printf("%d\n", memcmp(d->data,data[i]->data,d->datasize) == 0);
+			printf("%d\n", d->data != data[i]->data);
 		}
 
 		data_destroy(d);
 	}
+
 
 	for(i=0; i<1024; i++) {
 		free(key[i]);

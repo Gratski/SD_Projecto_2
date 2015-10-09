@@ -6,88 +6,56 @@
 #include "data.h"
 #include "entry.h"
 #include "message.h"
+#include "message-private.h"
 
 
 int message_to_buffer(struct message_t *msg, char **msg_buf){
+	if (msg == NULL)
+		return NULL;
 
 	short opcode = msg->opcode;
 	short c_type = msg->c_type;
 
-	int size = 2 + 2;
-	int offset = 0;
+	int size = SHORT_SIZE + SHORT_SIZE;
+	int offset = size;
 
-	// se eh result
+	// testar c_type da mensagem
 	if ( c_type == CT_RESULT ){
-
-		size += 4;
+		size += INT_SIZE;
 		*msg_buf = (char *) malloc( size );
 
-		//opcode
-		opcode = htons(opcode);
-		memcpy( msg_buf, &opcode, 2 );
-		offset += 2;
-
-		//c_type
-		c_type = htons(c_type);
-		memcpy( msg_buf + offset, &c_type, 2 );
-		offset += 2;
-
-		int result = msg->content.result;
-		result = htonl(result);
-		memcpy( msg_buf + offset, &result, 4 );
+		int result = htonl(msg->content.result);
+		memcpy(*msg_buf + offset, &result, INT_SIZE);
 	}
 
 	// se eh value
 	else if( c_type == CT_VALUE){
-
-		size += 4;
+		size += INT_SIZE;
 		size += msg->content.data->datasize;
 
 		*msg_buf = (char *) malloc( size );
 
-		//opcode
-		opcode = htons(opcode);
-		memcpy( msg_buf, &opcode, 2 );
-		offset += 2;
-
-		//c_type
-		c_type = htons(c_type);
-		memcpy( msg_buf + offset, &c_type, 2 );
-		offset += 2;
-
-		int datasize;
-		datasize = htonl(msg->content.data->datasize);
-		memcpy( msg_buf + offset, &datasize, 4 );
+		int datasize = htonl(msg->content.data->datasize);
+		memcpy( *msg_buf + offset, &datasize, 4 );
 		offset += 4;
 
 		datasize = msg->content.data->datasize;
-		memcpy( msg_buf + offset, msg->content.data->data, datasize );
+		memcpy( *msg_buf + offset, msg->content.data->data, datasize );
 	}
 
 	// se eh key
 	else if( c_type == CT_KEY ){
-
-		size += 4;
-		size += strlen(msg->content.key);
-
-		*msg_buf = ( char * ) malloc( size );
-
-		//opcode
-		opcode = htons(opcode);
-		memcpy( msg_buf, &opcode, 2 );
-		offset += 2;
-
-		//c_type
-		c_type = htons(c_type);
-		memcpy( msg_buf + offset, &c_type, 2 );
-		offset += 2;
-
 		int keysize = strlen(msg->content.key);
-		keysize = htonl(keysize);
-		memcpy(msg_buf + offset, &keysize, 4);
-		offset += 4;
+		size += INT_SIZE;
+		size += keysize;
 
-		memcpy( msg_buf + offset, msg->content.key, strlen(msg->content.key) );
+		*msg_buf = (char *) malloc( size );
+
+		int keysize_htonl = htonl(keysize);
+		memcpy(*msg_buf + offset, &keysize_htonl, INT_SIZE);
+
+		offset += INT_SIZE;
+		memcpy(*msg_buf + offset, msg->content.key, keysize);
 	}
 
 	// se eh keys
@@ -102,16 +70,6 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		}
 
 		*msg_buf = (char *) malloc(size);
-
-		//opcode
-		opcode = htons(opcode);
-		memcpy( msg_buf, &opcode, 2 );
-		offset += 2;
-
-		//c_type
-		c_type = htons(c_type);
-		memcpy( msg_buf + offset, &c_type, 2 );
-		offset += 2;
 
 		// numero de keys
 		int nkeys = htonl(i);
@@ -130,7 +88,6 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 			offset += presize;
 
 		}
-
 	}
 
 	// se eh entry
@@ -145,16 +102,6 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		size += msg->content.entry->value->datasize;
 
 		*msg_buf = (char *) malloc( size );
-
-		//opcode
-		opcode = htons(opcode);
-		memcpy( msg_buf, &opcode, 2 );
-		offset += 2;
-
-		//c_type
-		c_type = htons(c_type);
-		memcpy( msg_buf + offset, &c_type, 2 );
-		offset += 2;
 
 		// keysize
 		int keysize = strlen(msg->content.entry->key);
@@ -173,10 +120,18 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		memcpy( msg_buf + offset, msg->content.entry->value->data, pre_datasize );
 	}
-
+	// se c_type nao conhecido
 	else
 		size = -1;
-	// se c_type nao conhecido
+
+	//opcode
+	opcode = htons(opcode);
+	memcpy( *msg_buf, &opcode, 2 );
+
+	//c_type
+	c_type = htons(c_type);
+	memcpy( *msg_buf + SHORT_SIZE, &c_type, 2 );
+
 	return size;
 
 }
@@ -311,6 +266,7 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 void free_message(struct message_t *message) {
 	int i;
+
 	switch(message->c_type) {
 		case CT_VALUE:
 			data_destroy(message->content.data);

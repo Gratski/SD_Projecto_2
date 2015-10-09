@@ -71,6 +71,7 @@ int testResult() {
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		 memcmp(msg_str+2, &c_type, 2) == 0 &&
 		 memcmp(msg_str+4, &res, 4) == 0);
+
 	free_message(msg);
 
 	msg = buffer_to_message(msg_str, size);
@@ -112,10 +113,11 @@ int testKey() {
 
 	msg = buffer_to_message(msg_str, size);
 
-	result = result && (msg->opcode == 10 &&
+	result = result && (msg->opcode == 50 &&
 			    msg->c_type == CT_KEY &&
 			    strcmp(msg->content.key,"abcdef") == 0);
 
+	printf("result: %d\n", result);
 	free(msg_str);
 	print_message(msg);
 	free_message(msg);
@@ -325,9 +327,9 @@ int main() {
 
 	score += testResult();
 
-	score += testKey();
-
 	score += testValue();
+
+	score += testKey();
 
 	score += testEntrySemTS();
 
