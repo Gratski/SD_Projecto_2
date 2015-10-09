@@ -119,7 +119,7 @@ int testKey() {
 			    strcmp(msg->content.key,"abcdef") == 0);
 
 	free(msg_str);
-	print_message(msg);
+	//print_message(msg);
 	free_message(msg);
 
 	printf("Modulo mensagem -> teste - Key: %s\n",result?"passou":"nao passou");
@@ -343,7 +343,7 @@ int main() {
 
 	score += testValue();
 
-	//score += testKey();
+	score += testKey();
 
 	//score += testEntrySemTS();
 
