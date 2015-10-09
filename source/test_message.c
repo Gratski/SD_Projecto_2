@@ -110,6 +110,10 @@ int testKey() {
 		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0 &&
 		 	  memcmp(msg_str+6, &comp_key, keysize) == 0);
 
+	printf("res: %d\n", memcmp(msg_str, &opcode, 2) == 0 &&
+		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
+		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0);
+
 	free_message(msg);
 
 	msg = buffer_to_message(msg_str, size);
@@ -119,7 +123,7 @@ int testKey() {
 			    strcmp(msg->content.key,"abcdef") == 0);
 
 	free(msg_str);
-	//print_message(msg);
+	print_message(msg);
 	free_message(msg);
 
 	printf("Modulo mensagem -> teste - Key: %s\n",result?"passou":"nao passou");

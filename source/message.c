@@ -181,8 +181,11 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		keysize = ntohs(keysize);
 
 		offset += SHORT_SIZE;
-		msg->content.key = (char *) malloc(keysize);
+		msg->content.key = (char *) malloc(keysize + 1);
 		memcpy(msg->content.key, msg_buf + offset, keysize);
+
+		// terminar key
+		msg->content.key[keysize] = '\0';
 	}
 
 	// se eh keys
