@@ -27,7 +27,7 @@ void print_message(struct message_t *msg) {
 			}
 		}break;
 		case CT_VALUE:{
-			printf("datasize: %d\n",msg->content.value->datasize);
+			printf("datasize: %d\n",msg->content.data->datasize);
 		}break;
 		case CT_RESULT:{
 			printf("result: %d\n",msg->content.result);
@@ -130,12 +130,12 @@ int testValue() {
 	struct message_t *msg = (struct message_t*)malloc(sizeof(struct message_t));
 	msg->opcode = OC_PUT;
 	msg->c_type = CT_VALUE;
-	msg->content.value = data_create2(strlen("abc")+1,strdup("abc"));
+	msg->content.data = data_create2(strlen("abc")+1,strdup("abc"));
 	size = message_to_buffer(msg,&msg_str);
 
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
-	int datasize = msg->content.value->datasize;
+	int datasize = msg->content.data->datasize;
 	int datasize_conv = htonl(datasize);
 	char comp_data[datasize];
 	memcpy(comp_data, msg_str+8, datasize);
@@ -150,8 +150,8 @@ int testValue() {
 
 	result = result && (msg->opcode == OC_PUT &&
 			    msg->c_type == CT_VALUE &&
-			    msg->content.value->datasize == strlen("abc")+1 &&
-			    strcmp(msg->content.value->data,"abc") == 0);
+			    msg->content.data->datasize == strlen("abc")+1 &&
+			    strcmp(msg->content.data->data,"abc") == 0);
 
 	free(msg_str);
 	print_message(msg);
@@ -217,7 +217,6 @@ int testEntry() {
 	msg->c_type = CT_ENTRY;
 	msg->content.entry = entry_create(strdup("abc"),data_create2(strlen("abc")+1,
 		strdup("abc")));
-	msg->content.entry->timestamp = 100;
 	size = message_to_buffer(msg,&msg_str);
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
@@ -225,7 +224,6 @@ int testEntry() {
 	int keysize_conv = htonl(keysize);
 	char comp_key[keysize];
 	memcpy(comp_key, msg_str+8+8, keysize);
-	long long comp_ts = 7205759403792793600;
 	int datasize = msg->content.entry->value->datasize;
 	int datasize_conv = htonl(datasize);
 	char comp_data[datasize];
@@ -247,7 +245,6 @@ int testEntry() {
 			    msg->c_type == CT_ENTRY &&
 			    strcmp(msg->content.entry->key,"abc") == 0 &&
 			    msg->content.entry->value->datasize == strlen("abc")+1 &&
-				msg->content.entry->timestamp == 100 &&
 			    strcmp(msg->content.entry->value->data,"abc") == 0);
 
 	free(msg_str);

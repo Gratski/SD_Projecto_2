@@ -5,6 +5,7 @@
 
 #include "data.h"
 #include "entry.h"
+#include "message.h"
 
 
 int message_to_buffer(struct message_t *msg, char **msg_buf){
@@ -119,7 +120,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 
 		for (i = 0; msg->content.keys[i] != NULL; ++i)
-		{	
+		{
 			int presize = strlen(msg->content.keys[i]);
 			int keysize = htonl( presize );
 			memcpy( msg_buf + offset, &keysize, 4 );
@@ -186,7 +187,7 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	struct message_t *msg = (struct message_t *) malloc( sizeof( struct message_t ) );
 
 	int offset = 0;
-	
+
 	//le opcode
 	memcpy( &opcode, msg_buf, 2 );
 	offset += 2;
@@ -223,7 +224,7 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 		msg->content.data = (struct data_t *) malloc( sizeof(struct data_t) );
 		msg->content.data->datasize = datasize;
-		memcpy( msg->content.data->data, msg_buf + offset, datasize );	
+		memcpy( msg->content.data->data, msg_buf + offset, datasize );
 	}
 
 	// se eh key
@@ -280,7 +281,7 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		keysize = ntohl(keysize);
 
 		offset += 4;
-		
+
 		// entry key
 		memcpy(msg->content.entry->key , msg_buf + offset, keysize);
 
@@ -303,8 +304,32 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	else{
 		return NULL;
 	}
-	// se eh 
+	// se eh
 	return msg;
+}
+
+
+void free_message(struct message_t *message) {
+	int i;
+	switch(message->c_type) {
+		case CT_VALUE:
+			data_destroy(message->content.data);
+			break;
+		case CT_ENTRY:
+			entry_destroy(message->content.entry);
+			break;
+		case CT_KEY:
+			free(message->content.key);
+			break;
+		case CT_KEYS:
+			for (i = 0; message->content.keys[i] != NULL; i++)
+				free(message->content.keys[i]);
+
+			free(message->content.keys);
+			break;
+	}
+
+	free(message);
 }
 
 

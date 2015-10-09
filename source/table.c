@@ -118,8 +118,14 @@ struct data_t *table_get(struct table_t *table, char *key){
 	if ( table->places[pos] == NULL )
 		return NULL;
 
-	return entry_dup( list_get( table->places[pos], key ) );
+	struct entry_t *entry = list_get( table->places[pos], key );
 
+	if (entry == NULL)
+		return NULL;
+
+	return data_dup(entry->value);
+
+	// return entry_dup( list_get( table->places[pos], key ) );
 }
 
 
