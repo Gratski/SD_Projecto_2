@@ -44,15 +44,15 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 	else if( c_type == CT_KEY ){
 		int keysize = strlen(msg->content.key);
-		size += INT_SIZE;
+		size += SHORT_SIZE;
 		size += keysize;
 
 		*msg_buf = (char *) malloc( size );
 
-		int keysize_htonl = htonl(keysize);
-		memcpy(*msg_buf + offset, &keysize_htonl, INT_SIZE);
+		int keysize_htons = htons(keysize);
+		memcpy(*msg_buf + offset, &keysize_htons, SHORT_SIZE);
 
-		offset += INT_SIZE;
+		offset += SHORT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.key, keysize);
 	}
 
@@ -178,21 +178,18 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 	// se eh key
 	else if( c_type == CT_KEY ){
-
 		int keysize;
-		memcpy( &keysize, msg_buf + offset, 4 );
-		keysize = ntohl(keysize);
+		memcpy(&keysize, msg_buf + offset, SHORT_SIZE);
+		keysize = ntohs(keysize);
 
-		offset += 4;
-
-		msg->content.key = (char *) malloc( keysize );
+		offset += 2;
+		msg->content.key = (char *) malloc(keysize);
 		memcpy( msg->content.key, msg_buf + offset, keysize );
 
 	}
 
 	// se eh keys
 	else if ( c_type == CT_KEYS ){
-
 		int num;
 		memcpy( &num, msg_buf + offset, 4 );
 		num = ntohl(num);

@@ -97,17 +97,18 @@ int testKey() {
 	msg->content.key = strdup("abcdef");
 	size = message_to_buffer(msg,&msg_str);
 
+
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
 	int keysize = strlen(msg->content.key);
-	int keysize_conv = htonl(keysize);
+	int keysize_conv = htons(keysize);
 	char comp_key[keysize];
-	memcpy(comp_key, msg_str+8, keysize);
+	memcpy(comp_key, msg_str+6, keysize);
 
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
-		 	  memcmp(msg_str+4, &keysize_conv, 4) == 0 &&
-		 	  memcmp(msg_str+8, &comp_key, keysize) == 0);
+		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0 &&
+		 	  memcmp(msg_str+6, &comp_key, keysize) == 0);
 
 	free_message(msg);
 
@@ -117,7 +118,6 @@ int testKey() {
 			    msg->c_type == CT_KEY &&
 			    strcmp(msg->content.key,"abcdef") == 0);
 
-	printf("result: %d\n", result);
 	free(msg_str);
 	print_message(msg);
 	free_message(msg);
@@ -217,13 +217,23 @@ int testEntry() {
 	struct message_t *msg = (struct message_t*)malloc(sizeof(struct message_t));
 	msg->opcode = OC_PUT;
 	msg->c_type = CT_ENTRY;
+
+	char *key = "123abc";
+	char *data_s = "1234567890abc";
+	struct data_t *value;
+	struct entry_t *entry;
+
+	value = data_create2(strlen(data_s)+1, data_s);
+	entry = entry_create(key, value);
+
 	msg->content.entry = entry_create(strdup("abc"),data_create2(strlen("abc")+1,
 		strdup("abc")));
+
 	size = message_to_buffer(msg,&msg_str);
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
 	int keysize = strlen(msg->content.entry->key);
-	int keysize_conv = htonl(keysize);
+	int keysize_conv = htons(keysize);
 	char comp_key[keysize];
 	memcpy(comp_key, msg_str+8+8, keysize);
 	int datasize = msg->content.entry->value->datasize;
@@ -231,7 +241,7 @@ int testEntry() {
 	char comp_data[datasize];
 	memcpy(comp_data, msg_str+8+keysize+8+4, datasize);
 
-	//TODO timestamp
+
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
 			  memcmp(msg_str+4+8, &keysize_conv, 4) == 0 &&
@@ -331,7 +341,7 @@ int main() {
 
 	score += testKey();
 
-	//score += testEntrySemTS();
+	score += testEntrySemTS();
 
 	score += testEntry();
 
