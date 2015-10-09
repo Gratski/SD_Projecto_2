@@ -70,18 +70,17 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		// numero de keys
 		int nkeys = htonl(i);
-		memcpy(*msg_buf + offset, &nkeys, 4);
+		memcpy(*msg_buf + offset, &nkeys, INT_SIZE);
 		offset += 4;
-
 
 		for (i = 0; msg->content.keys[i] != NULL; ++i)
 		{
 			int presize = strlen(msg->content.keys[i]);
-			int keysize = htonl( presize );
-			memcpy(*msg_buf + offset, &keysize, 4);
-			offset += 4;
+			int keysize = htonl(presize);
+			memcpy(*msg_buf + offset, &keysize, SHORT_SIZE);
+			offset += SHORT_SIZE;
 
-			memcpy(*msg_buf + offset, msg->content.keys[i], presize );
+			memcpy(*msg_buf + offset, msg->content.keys[i], presize);
 			offset += presize;
 		}
 	}
@@ -202,8 +201,8 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		for( i = 0; i < num; i++ )
 		{
 			int size;
-			memcpy( &size, msg_buf + offset, 4 );
-			size = ntohl(size);
+			memcpy( &size, msg_buf + offset, SHORT_SIZE );
+			size = ntohs(size);
 
 			offset += 4;
 

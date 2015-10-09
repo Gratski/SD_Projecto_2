@@ -225,6 +225,7 @@ int testEntry() {
 
 	value = data_create2(strlen(data_s)+1, data_s);
 	entry = entry_create(key, value);
+	puts("Here");
 
 	msg->content.entry = entry_create(strdup("abc"),data_create2(strlen("abc")+1,
 		strdup("abc")));
@@ -341,7 +342,7 @@ int main() {
 
 	score += testKey();
 
-	score += testEntrySemTS();
+	//score += testEntrySemTS();
 
 	score += testEntry();
 
