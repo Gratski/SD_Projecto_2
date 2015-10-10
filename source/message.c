@@ -99,17 +99,18 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		// keysize
 		int keysize_htons = htons(keysize);
 		memcpy(*msg_buf + offset, &keysize_htons, SHORT_SIZE);
-		offset += SHORT_SIZE;
 
 		// key em si
+		offset += SHORT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.entry->key, keysize);
-		offset += strlen(msg->content.entry->key);
 
 		int pre_datasize = msg->content.entry->value->datasize;
 		int datasize = htonl(pre_datasize);
-		memcpy(*msg_buf + offset, &datasize, 4);
-		offset += 4;
 
+		offset += strlen(msg->content.entry->key);
+		memcpy(*msg_buf + offset, &datasize, INT_SIZE);
+
+		offset += INT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.entry->value->data, pre_datasize);
 	}
 	// se c_type nao conhecido
@@ -118,15 +119,15 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 	//opcode
 	opcode = htons(opcode);
-	memcpy( *msg_buf, &opcode, 2 );
+	memcpy(*msg_buf, &opcode, SHORT_SIZE);
 
 	//c_type
 	c_type = htons(c_type);
-	memcpy(*msg_buf + SHORT_SIZE, &c_type, 2);
+	memcpy(*msg_buf + SHORT_SIZE, &c_type, SHORT_SIZE);
 
 	return size;
-
 }
+
 
 struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
@@ -227,8 +228,10 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 		// key
 		offset += SHORT_SIZE;
-		char *key = (char*) malloc(keysize);
+		char *key = (char*) malloc(keysize + 1);
 		memcpy(key, msg_buf + offset, keysize);
+		// terminar string
+		key[keysize] = '\0';
 
 		// datasize
 		int data_size;
@@ -237,13 +240,18 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		data_size = ntohl(data_size);
 
 		// data
-		offset += 4;
-		void *entry_data = malloc(data_size);
+		offset += INT_SIZE;
+		void *entry_data = (void *) malloc(data_size);
 		memcpy(entry_data, msg_buf + offset, data_size);
 
 		// criar entry
 		struct data_t *data = data_create2(data_size, entry_data);
 		msg->content.entry = entry_create(key, data);
+
+		// libertar structs auxiliares
+		data_destroy(data);
+		free(entry_data);
+		free(key);
 	}
 	else{
 		return NULL;

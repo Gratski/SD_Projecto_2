@@ -222,50 +222,50 @@ int testEntrySemTS() {
 int testEntry() {
 	int result, size;
 	char *msg_str = NULL;
-	struct message_t *msg = (struct message_t*)malloc(sizeof(struct message_t));
+	struct message_t *msg = (struct message_t*) malloc(sizeof(struct message_t));
 	msg->opcode = OC_PUT;
 	msg->c_type = CT_ENTRY;
 
-	char *key = "123abc";
-	char *data_s = "1234567890abc";
-	struct data_t *value;
-	struct entry_t *entry;
+	char *key = "abc";
+	char *data_s = "abc";
 
-	value = data_create2(strlen(data_s)+1, data_s);
-	entry = entry_create(key, value);
+	struct data_t *aux_data = data_create2(strlen(data_s)+1, data_s);
 
-	msg->content.entry = entry_create(strdup("abc"),data_create2(strlen("abc")+1,
-		strdup("abc")));
+	msg->content.entry = entry_create(key, aux_data);
+
+	data_destroy(aux_data);
 
 	size = message_to_buffer(msg,&msg_str);
+
+
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
 	int keysize = strlen(msg->content.entry->key);
 	int keysize_conv = htons(keysize);
-	char comp_key[keysize];
-
+	char *comp_key = (char *) malloc(keysize);
 	memcpy(comp_key, msg_str + 6, keysize);
 
 	int datasize = msg->content.entry->value->datasize;
 	int datasize_conv = htonl(datasize);
-	char comp_data[datasize];
+	char *comp_data = (char *) malloc(datasize);
 
-	// TODO corrigir offset
 	memcpy(comp_data, msg_str + 4 + 2 + keysize + 4, datasize);
 
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
-			  memcmp(msg_str+4+8, &keysize_conv, 4) == 0 &&
-			  memcmp(msg_str+8+8, &comp_key, keysize) == 0 &&
-		 	  memcmp(msg_str+8+8+keysize, &datasize_conv, 4) == 0 &&
-		 	  memcmp(msg_str+8+8+keysize+4, &comp_data, datasize) == 0);
+			  memcmp(msg_str+2+2, &keysize_conv, 2) == 0 &&
+			  memcmp(msg_str+2+2+2, comp_key, keysize) == 0 &&
+		 	  memcmp(msg_str+2+2+2+keysize, &datasize_conv, 4) == 0 &&
+		 	  memcmp(msg_str+2+2+2+keysize+4, comp_data, datasize) == 0);
 
+	free(comp_key);
+	free(comp_data);
 	free_message(msg);
 
-	// TODO corrigir alocacoes de memoria na parte relativa a CT_ENTRY
+	// TODO corrigir alocacoes de memoria na parte relativa a CT_ENTRY.
 	msg = buffer_to_message(msg_str, size);
 
-	puts("Here");
+
 	result = result && (msg->opcode == OC_PUT &&
 			    msg->c_type == CT_ENTRY &&
 			    strcmp(msg->content.entry->key,"abc") == 0 &&
