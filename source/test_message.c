@@ -356,7 +356,8 @@ int main() {
 
 	score += testEntry();
 
-	//score += testKeys();
+	//TODO corrigir ct_keys
+	score += testKeys();
 
 	//score += testInvalida();
 
