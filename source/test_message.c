@@ -112,7 +112,8 @@ int testKey() {
 
 	printf("res: %d\n", memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
-		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0);
+		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0 &&
+		 	  memcmp(msg_str+6, &comp_key, keysize) == 0);
 
 	free_message(msg);
 
@@ -232,7 +233,6 @@ int testEntry() {
 
 	value = data_create2(strlen(data_s)+1, data_s);
 	entry = entry_create(key, value);
-	puts("Here");
 
 	msg->content.entry = entry_create(strdup("abc"),data_create2(strlen("abc")+1,
 		strdup("abc")));
@@ -243,12 +243,15 @@ int testEntry() {
 	int keysize = strlen(msg->content.entry->key);
 	int keysize_conv = htons(keysize);
 	char comp_key[keysize];
-	memcpy(comp_key, msg_str+8+8, keysize);
+
+	memcpy(comp_key, msg_str + 6, keysize);
+
 	int datasize = msg->content.entry->value->datasize;
 	int datasize_conv = htonl(datasize);
 	char comp_data[datasize];
-	memcpy(comp_data, msg_str+8+keysize+8+4, datasize);
 
+	// TODO corrigir offset
+	memcpy(comp_data, msg_str + 4 + 2 + keysize + 4, datasize);
 
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
@@ -259,8 +262,10 @@ int testEntry() {
 
 	free_message(msg);
 
+	// TODO corrigir alocacoes de memoria na parte relativa a CT_ENTRY
 	msg = buffer_to_message(msg_str, size);
 
+	puts("Here");
 	result = result && (msg->opcode == OC_PUT &&
 			    msg->c_type == CT_ENTRY &&
 			    strcmp(msg->content.entry->key,"abc") == 0 &&
@@ -349,9 +354,7 @@ int main() {
 
 	score += testKey();
 
-	//score += testEntrySemTS();
-
-	//score += testEntry();
+	score += testEntry();
 
 	//score += testKeys();
 
