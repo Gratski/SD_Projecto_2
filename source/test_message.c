@@ -40,19 +40,35 @@ char** create_keys() {
 	struct list_t *list = list_create();
 	char **keys;
 	struct data_t *data;
+	struct entry_t *entry;
 
-	data = data_create2(strlen("abc")+1,"abc");
-	list_add(list,entry_create("abc", data));
+	char *key1 = "abc";
+	char *key2 = "123";
+	char *key3 = "ul2012";
+	char *key4 = "TESTE";
 
-	data = data_create2(strlen("123")+1,"123");
-	list_add(list,entry_create("123",data));
+	data = data_create2(strlen(key1)+1,key1);
+	entry = entry_create(key1, data);
+	list_add(list,entry);
 
-	data = data_create2(strlen("ul2012")+1,"ul2012");
-	list_add(list,entry_create("ul2012",data));
+	data = data_create2(strlen(key2)+1,key2);
+	entry = entry_create(key2,data);
+	list_add(list,entry);
 
-	data = data_create2(strlen("TESTE")+1,"TESTE");
-	list_add(list,entry_create("TESTE",data));
+	data = data_create2(strlen(key3)+1,key3);
+	entry = entry_create(key3,data);
+	list_add(list,entry);
 
+	data = data_create2(strlen(key4)+1,key4);
+	entry = entry_create(key4,data);
+	list_add(list,entry);
+
+	//free(key1);
+	//free(key2);
+	//free(key3);
+	//free(key4);
+	free(data);
+	free(entry);
 	keys = list_get_keys(list);
 	list_destroy(list);
 
@@ -109,11 +125,6 @@ int testKey() {
 	memcpy(comp_key, msg_str+6, keysize);
 
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
-		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
-		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0 &&
-		 	  memcmp(msg_str+6, &comp_key, keysize) == 0);
-
-	printf("res: %d\n", memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
 		 	  memcmp(msg_str+4, &keysize_conv, 2) == 0 &&
 		 	  memcmp(msg_str+6, &comp_key, keysize) == 0);
@@ -240,7 +251,6 @@ int testEntry() {
 
 	size = message_to_buffer(msg,&msg_str);
 
-
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
 	int keysize = strlen(msg->content.entry->key);
@@ -362,10 +372,10 @@ int main() {
 	//TODO corrigir ct_keys
 	score += testKeys();
 
-	//score += testInvalida();
+	score += testInvalida();
 
 
-	printf("Resultados do teste do modulo message: %d/7\n",score);
+	printf("Resultados do teste do modulo message: %d/6\n",score);
 
 	return score;
 }

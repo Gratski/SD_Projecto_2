@@ -25,6 +25,9 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		size += INT_SIZE;
 		*msg_buf = (char *) malloc(size);
 
+		if (msg_buf == NULL)
+			return -1;
+
 		int result = htonl(msg->content.result);
 		memcpy(*msg_buf + offset, &result, INT_SIZE);
 	}
@@ -34,6 +37,9 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		size += msg->content.data->datasize;
 
 		*msg_buf = (char *) malloc(size);
+
+		if (msg_buf == NULL)
+			return -1;
 
 		int datasize_htonl = htonl(msg->content.data->datasize);
 		memcpy(*msg_buf + offset, &datasize_htonl, INT_SIZE);
@@ -48,6 +54,9 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		size += keysize;
 
 		*msg_buf = (char *) malloc(size);
+
+		if (msg_buf == NULL)
+			return -1;
 
 		int keysize_htons = htons(keysize);
 		memcpy(*msg_buf + offset, &keysize_htons, SHORT_SIZE);
@@ -70,6 +79,9 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		}
 
 		*msg_buf = (char *) malloc(size);
+
+		if (msg_buf == NULL)
+			return -1;
 
 		// numero de keys
 		int nkeys = htonl(i);
@@ -99,6 +111,9 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		size += msg->content.entry->value->datasize;
 
 		*msg_buf = (char *) malloc(size);
+
+		if (msg_buf == NULL)
+			return -1;
 
 		// keysize
 		int keysize_htons = htons(keysize);
@@ -134,6 +149,9 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 
 struct message_t *buffer_to_message(char *msg_buf, int msg_size){
+	if (msg_buf == NULL)
+		return NULL;
+
 	short opcode, c_type;
 	struct message_t *msg = (struct message_t *) malloc(sizeof(struct message_t));
 
@@ -162,7 +180,6 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		result = ntohl(result);
 
 		msg->content.result = result;
-		//memcpy(&(msg->content.result), &result, INT_SIZE);
 	}
 
 	// se eh value
