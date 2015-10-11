@@ -38,16 +38,20 @@ void print_message(struct message_t *msg) {
 
 char** create_keys() {
 	struct list_t *list = list_create();
-	char *key, **keys;
+	char **keys;
+	struct data_t *data;
 
-	key = "abc";
-	list_add(list,entry_create(strdup(key),data_create2(strlen(key)+1,strdup(key))));
-	key = "123";
-	list_add(list,entry_create(strdup(key),data_create2(strlen(key)+1,strdup(key))));
-	key = "ul2012";
-	list_add(list,entry_create(strdup(key),data_create2(strlen(key)+1,strdup(key))));
-	key = "TESTE";
-	list_add(list,entry_create(strdup(key),data_create2(strlen(key)+1,strdup(key))));
+	data = data_create2(strlen("abc")+1,"abc");
+	list_add(list,entry_create("abc", data));
+
+	data = data_create2(strlen("123")+1,"123");
+	list_add(list,entry_create("123",data));
+
+	data = data_create2(strlen("ul2012")+1,"ul2012");
+	list_add(list,entry_create("ul2012",data));
+
+	data = data_create2(strlen("TESTE")+1,"TESTE");
+	list_add(list,entry_create("TESTE",data));
 
 	keys = list_get_keys(list);
 	list_destroy(list);
@@ -96,7 +100,6 @@ int testKey() {
 	msg->c_type = CT_KEY;
 	msg->content.key = strdup("abcdef");
 	size = message_to_buffer(msg,&msg_str);
-
 
 	int opcode = htons(msg->opcode);
 	int c_type = htons(msg->c_type);
@@ -294,8 +297,8 @@ int testKeys() {
 	int num_keys = 4;
 	int num_keys_conv = htonl(num_keys);
 	int size1 = strlen("123");
-	int size2 = strlen("TESTE");
-	int size3 = strlen("abc");
+	int size2 = strlen("abc");
+	int size3 = strlen("TESTE");
 	int size4 = strlen("ul2012");
 	int size1_c = htonl(size1);
 	int size2_c = htonl(size2);
@@ -305,10 +308,10 @@ int testKeys() {
 	result = (memcmp(msg_str, &opcode, 2) == 0 &&
 		  	  memcmp(msg_str+2, &c_type, 2) == 0 &&
 		 	  memcmp(msg_str+4, &num_keys_conv, 4) == 0 &&
-			  memcmp(msg_str+8, &size1_c, 4) == 0 &&
-			  memcmp(msg_str+12+size1, &size2_c, 4) == 0 &&
-			  memcmp(msg_str+12+4+size1 + size2, &size3_c, 4) == 0 &&
-			  memcmp(msg_str+12+8+size1 + size2 + size3, &size4_c, 4) == 0);
+			  memcmp(msg_str+8, &size1_c, 2) == 0 &&
+			  memcmp(msg_str+12+size1, &size2_c, 2) == 0 &&
+			  memcmp(msg_str+12+2+size1 + size2, &size3_c, 2) == 0 &&
+			  memcmp(msg_str+12+4+size1 + size2 + size3, &size4_c, 2) == 0);
 
 	free_message(msg);
 
@@ -317,8 +320,8 @@ int testKeys() {
 	result = result && (msg->opcode == OC_PUT &&
 			    msg->c_type == CT_KEYS &&
 			    strcmp(msg->content.keys[0],"123") == 0 &&
-			    strcmp(msg->content.keys[1],"TESTE") == 0 &&
-			    strcmp(msg->content.keys[2],"abc") == 0 &&
+			    strcmp(msg->content.keys[1],"abc") == 0 &&
+			    strcmp(msg->content.keys[2],"TESTE") == 0 &&
 			    strcmp(msg->content.keys[3],"ul2012") == 0 &&
 			    msg->content.keys[4] == NULL);
 

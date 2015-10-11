@@ -10,23 +10,20 @@
 
 
 int message_to_buffer(struct message_t *msg, char **msg_buf){
-
-	
 	if (msg == NULL)
 		return -1;
 	// obter opcode e c_type de mensagem
 	short opcode = msg->opcode;
 	short c_type = msg->c_type;
 
-	
+
 	int size = SHORT_SIZE + SHORT_SIZE;
 	int offset = size;
 
 	/* Testar c_type da mensagem */
-	if ( c_type == CT_RESULT ){
-		
+	if (c_type == CT_RESULT){
 		size += INT_SIZE;
-		*msg_buf = (char *) malloc( size );
+		*msg_buf = (char *) malloc(size);
 
 		int result = htonl(msg->content.result);
 		memcpy(*msg_buf + offset, &result, INT_SIZE);
@@ -59,13 +56,16 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		memcpy(*msg_buf + offset, msg->content.key, keysize);
 	}
 
-	else if( c_type == CT_KEYS ){
+	else if(c_type == CT_KEYS){
+		// num_keys
 		size += INT_SIZE;
 		int i;
 
-		for (i = 0; msg->content.keys[i] != NULL ; ++i)
+		for (i = 0; msg->content.keys[i] != NULL ; i++)
 		{
-			size += 4;
+			// key_size
+			size += SHORT_SIZE;
+			// key length
 			size += strlen(msg->content.keys[i]);
 		}
 
@@ -74,12 +74,12 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		// numero de keys
 		int nkeys = htonl(i);
 		memcpy(*msg_buf + offset, &nkeys, INT_SIZE);
-		offset += 4;
+		offset += INT_SIZE;
 
-		for (i = 0; msg->content.keys[i] != NULL; ++i)
+		for (i = 0; msg->content.keys[i] != NULL; i++)
 		{
 			int presize = strlen(msg->content.keys[i]);
-			int keysize = htonl(presize);
+			int keysize = htons(presize);
 			memcpy(*msg_buf + offset, &keysize, SHORT_SIZE);
 			offset += SHORT_SIZE;
 
@@ -134,20 +134,19 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 
 struct message_t *buffer_to_message(char *msg_buf, int msg_size){
-
 	short opcode, c_type;
-	struct message_t *msg = (struct message_t *) malloc( msg_size );
+	struct message_t *msg = (struct message_t *) malloc(sizeof(struct message_t));
 
 	int offset = 0;
 
 	//le opcode
-	memcpy( &opcode, msg_buf, 2 );
-	offset += 2;
+	memcpy(&opcode, msg_buf, SHORT_SIZE);
+	offset += SHORT_SIZE;
 	opcode = ntohs(opcode);
 
 	//le c_type
-	memcpy( &c_type, msg_buf + offset, 2 );
-	offset += 2;
+	memcpy(&c_type, msg_buf + offset, SHORT_SIZE);
+	offset += SHORT_SIZE;
 	c_type = ntohs(c_type);
 
 	//atribuir valores a message_t
@@ -163,7 +162,7 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		result = ntohl(result);
 
 		msg->content.result = result;
-		memcpy(&(msg->content.result), &result, INT_SIZE);
+		//memcpy(&(msg->content.result), &result, INT_SIZE);
 	}
 
 	// se eh value
@@ -194,37 +193,52 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	}
 
 	// se eh keys
-	else if ( c_type == CT_KEYS ){
-		int num;
-		memcpy( &num, msg_buf + offset, 4 );
-		num = ntohl(num);
+	else if (c_type == CT_KEYS){
+		int num_keys;
+		memcpy(&num_keys, msg_buf + offset, INT_SIZE);
+		offset += INT_SIZE;
+		num_keys = ntohl(num_keys);
 
-		offset += 4;
+		msg->content.keys = (char **) malloc(sizeof(char *) * (num_keys + 1));
 
-		msg->content.keys = (char **) malloc( sizeof(char *) * (num + 1) );
+		if (msg->content.keys == NULL)
+			return NULL;
 
 		int i;
-		for( i = 0; i < num; i++ )
+		for(i = 0; i < num_keys; i++)
 		{
-			int size;
-			memcpy( &size, msg_buf + offset, SHORT_SIZE );
-			size = ntohs(size);
+			// ler tamanho da key
+			int key_size;
+			memcpy(&key_size, msg_buf + offset, SHORT_SIZE);
+			offset += SHORT_SIZE;
+			key_size = ntohs(key_size);
 
-			offset += 4;
+			msg->content.keys[i] = (char *) malloc(sizeof(char) * (key_size + 1));
 
-			memcpy( msg->content.keys[i], msg_buf + offset, size );
-			offset += size;
+			// falha ao alocar memoria
+			if (msg->content.keys[i] == NULL)
+			{
+				int j;
+				// libertar keys anteriores
+				for (j = 0; j < i; j++)
+					free(msg->content.keys[j]);
+			}
+
+			// ler key
+			memcpy(msg->content.keys[i], msg_buf + offset, key_size);
+
+			// terminar string
+			msg->content.keys[i][key_size] = '\0';
+			offset += key_size;
 		}
 
-		msg->content.keys[i + 1] = NULL;
+		// terminar array de keys
+		msg->content.keys[i] = NULL;
 	}
 
 	// se eh entry
 	else if( c_type == CT_ENTRY )
 	{
-		// cria uma entry em union
-		//msg->content.entry = (struct entry_t *) malloc(sizeof( struct entry_t ));
-
 		// keysize
 		int keysize;
 		memcpy(&keysize, msg_buf + offset, SHORT_SIZE);
