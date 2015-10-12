@@ -16,11 +16,10 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 	short opcode = msg->opcode;
 	short c_type = msg->c_type;
 
-
 	int size = SHORT_SIZE + SHORT_SIZE;
 	int offset = size;
 
-	/* Testar c_type da mensagem */
+	//CT_RESULT
 	if (c_type == CT_RESULT){
 		size += INT_SIZE;
 		*msg_buf = (char *) malloc(size);
@@ -31,7 +30,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		int result = htonl(msg->content.result);
 		memcpy(*msg_buf + offset, &result, INT_SIZE);
 	}
-
+	//CT_VALUE
 	else if( c_type == CT_VALUE){
 		size += INT_SIZE;
 		size += msg->content.data->datasize;
@@ -47,7 +46,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		memcpy(*msg_buf + offset, msg->content.data->data, msg->content.data->datasize);
 	}
-
+	//CT_KEY
 	else if( c_type == CT_KEY ){
 		int keysize = strlen(msg->content.key);
 		size += SHORT_SIZE;
@@ -64,7 +63,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		offset += SHORT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.key, keysize);
 	}
-
+	//CT_KEYS
 	else if(c_type == CT_KEYS){
 		// num_keys
 		size += INT_SIZE;
@@ -99,7 +98,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 			offset += presize;
 		}
 	}
-
+	//CT_ENTRY
 	else if(c_type == CT_ENTRY){
 		int keysize = strlen(msg->content.entry->key);
 
@@ -132,15 +131,15 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		offset += INT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.entry->value->data, pre_datasize);
 	}
-	// se c_type nao conhecido
+	// C_TYPE invalido
 	else
 		size = -1;
 
-	//opcode
+	//OP_CODE
 	opcode = htons(opcode);
 	memcpy(*msg_buf, &opcode, SHORT_SIZE);
 
-	//c_type
+	//C_TYPE
 	c_type = htons(c_type);
 	memcpy(*msg_buf + SHORT_SIZE, &c_type, SHORT_SIZE);
 
@@ -149,53 +148,68 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 
 struct message_t *buffer_to_message(char *msg_buf, int msg_size){
-	if (msg_buf == NULL)
+	if (msg_buf == NULL || msg_size < 0)
 		return NULL;
 
 	short opcode, c_type;
 	struct message_t *msg = (struct message_t *) malloc(sizeof(struct message_t));
 
-	int offset = 0;
+	if (msg == NULL)
+		return NULL;
 
-	//le opcode
+	int offset = 0, buffer_size;
+
+	//ler opcode
 	memcpy(&opcode, msg_buf, SHORT_SIZE);
 	offset += SHORT_SIZE;
 	opcode = ntohs(opcode);
 
-	//le c_type
+	//ler c_type
 	memcpy(&c_type, msg_buf + offset, SHORT_SIZE);
 	offset += SHORT_SIZE;
 	c_type = ntohs(c_type);
 
-	//atribuir valores a message_t
 	msg->opcode = opcode;
 	msg->c_type = c_type;
 
-	// se eh result
+	//CT_RESULT
 	if( c_type == CT_RESULT )
 	{
-		//le result
+		//ler result
 		int result;
 		memcpy(&result, msg_buf + offset, INT_SIZE);
 		result = ntohl(result);
-
 		msg->content.result = result;
-	}
 
-	// se eh value
+		buffer_size = offset + INT_SIZE;
+	}
+	//CT_VALUE
 	else if( c_type == CT_VALUE ) {
 		int datasize;
 		memcpy(&datasize, msg_buf + offset, INT_SIZE);
 		datasize = ntohl(datasize);
 
 		offset += INT_SIZE;
-		msg->content.data = (struct data_t *) malloc( sizeof(struct data_t) );
+		msg->content.data = (struct data_t *) malloc(sizeof(struct data_t));
+
+		if (msg->content.data == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
 		msg->content.data->datasize = datasize;
 		msg->content.data->data = (void *) malloc(datasize);
-		memcpy(msg->content.data->data, msg_buf + offset, datasize);
-	}
 
-	// se eh key
+		if (msg->content.data->data == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
+		memcpy(msg->content.data->data, msg_buf + offset, datasize);
+
+		buffer_size = offset + datasize;
+	}
+	//CT_KEY
 	else if(c_type == CT_KEY){
 		int keysize;
 		memcpy(&keysize, msg_buf + offset, SHORT_SIZE);
@@ -203,13 +217,20 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 		offset += SHORT_SIZE;
 		msg->content.key = (char *) malloc(keysize + 1);
+
+		if (msg->content.key == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
 		memcpy(msg->content.key, msg_buf + offset, keysize);
 
 		// terminar key
 		msg->content.key[keysize] = '\0';
-	}
 
-	// se eh keys
+		buffer_size = offset + keysize;
+	}
+	//CT_KEYS
 	else if (c_type == CT_KEYS){
 		int num_keys;
 		memcpy(&num_keys, msg_buf + offset, INT_SIZE);
@@ -218,8 +239,10 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 		msg->content.keys = (char **) malloc(sizeof(char *) * (num_keys + 1));
 
-		if (msg->content.keys == NULL)
+		if (msg->content.keys == NULL) {
+			free_message(msg);
 			return NULL;
+		}
 
 		int i;
 		for(i = 0; i < num_keys; i++)
@@ -239,21 +262,27 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 				// libertar keys anteriores
 				for (j = 0; j < i; j++)
 					free(msg->content.keys[j]);
+
+				free(msg->content.keys);
+				free(msg);
+
+				return NULL;
 			}
 
 			// ler key
 			memcpy(msg->content.keys[i], msg_buf + offset, key_size);
-
 			// terminar string
 			msg->content.keys[i][key_size] = '\0';
+
 			offset += key_size;
 		}
 
 		// terminar array de keys
 		msg->content.keys[i] = NULL;
-	}
 
-	// se eh entry
+		buffer_size = offset;
+	}
+	//CT_ENTRY
 	else if( c_type == CT_ENTRY )
 	{
 		// keysize
@@ -261,37 +290,70 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		memcpy(&keysize, msg_buf + offset, SHORT_SIZE);
 		keysize = ntohs(keysize);
 
-		// key
+		//key
 		offset += SHORT_SIZE;
 		char *key = (char*) malloc(keysize + 1);
+
+		if (key == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
 		memcpy(key, msg_buf + offset, keysize);
 		// terminar string
 		key[keysize] = '\0';
 
-		// datasize
+		//datasize
 		int data_size;
 		offset += keysize;
 		memcpy(&data_size, msg_buf + offset, INT_SIZE);
 		data_size = ntohl(data_size);
 
-		// data
+		//criar entry data
 		offset += INT_SIZE;
 		void *entry_data = (void *) malloc(data_size);
+
+		if (entry_data == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
 		memcpy(entry_data, msg_buf + offset, data_size);
 
-		// criar entry
+		//criar entry
 		struct data_t *data = data_create2(data_size, entry_data);
+
+		if (data == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
 		msg->content.entry = entry_create(key, data);
 
-		// libertar structs auxiliares
+		if (msg->content.entry == NULL) {
+			free_message(msg);
+			return NULL;
+		}
+
+		//libertar structs auxiliares
 		data_destroy(data);
 		free(entry_data);
 		free(key);
+
+		buffer_size = offset + data_size;
 	}
-	else{
+	//C_TYPE invalido
+	else {
+		free_message(msg);
 		return NULL;
 	}
-	// se eh
+
+	//tamanho da mensagem invalido
+	if (buffer_size != msg_size) {
+		free_message(msg);
+		return NULL;
+	}
+
 	return msg;
 }
 

@@ -172,6 +172,10 @@ char **table_get_keys(struct table_t *table){
 
 		if( table->places[i] != NULL ){
 			char **l = list_get_keys(table->places[i]);
+
+			if (l == NULL)
+				return NULL;
+
 			int j;
 			for(j=0; l[j]!=NULL; j++){
 				keys[index] = strdup(l[j]);
@@ -194,5 +198,4 @@ void table_free_keys(char **keys){
 		free(keys[i]);
 
 	free(keys);
-
 }
