@@ -12,8 +12,15 @@
 int message_to_buffer(struct message_t *msg, char **msg_buf){
 	if (msg == NULL)
 		return -1;
-	// obter opcode e c_type de mensagem
+
+	//obter opcode
 	short opcode = msg->opcode;
+
+	//validar opcode
+	if (validate_opcode(opcode) < 0)
+		return -1;
+
+	//obter c_type
 	short c_type = msg->c_type;
 
 	int size = SHORT_SIZE + SHORT_SIZE;
@@ -164,6 +171,9 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	offset += SHORT_SIZE;
 	opcode = ntohs(opcode);
 
+	if (validate_opcode(opcode) < 0)
+		return NULL;
+
 	//ler c_type
 	memcpy(&c_type, msg_buf + offset, SHORT_SIZE);
 	offset += SHORT_SIZE;
@@ -173,7 +183,7 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	msg->c_type = c_type;
 
 	//CT_RESULT
-	if( c_type == CT_RESULT )
+	if(c_type == CT_RESULT)
 	{
 		//ler result
 		int result;
@@ -382,6 +392,29 @@ void free_message(struct message_t *message) {
 	free(message);
 }
 
+int validate_opcode(int opcode) {
+	if (opcode == OC_SIZE || opcode == OC_DEL || opcode == OC_UPDATE ||
+		opcode == OC_GET || opcode == OC_PUT)
+		return 0;
 
+	return -1;
+}
+
+int validate_data(struct data_t *data) {
+	if (data->datasize < 0 || (data->datasize > 0 && data->data != NULL))
+		return -1;
+
+	return 0;
+}
+
+//TODO
+int validate_entry(struct entry_t *entry) {
+	return 0;
+}
+
+//TODO
+int validate_msg(struct message_t *msg) {
+	return 0;
+}
 
 
