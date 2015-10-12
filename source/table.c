@@ -13,19 +13,18 @@ int hashcode(struct table_t *table, char *key){
 	if ( key_length <= 6 )
 	{
 		for (i = 0; i < key_length; ++i)
-			val += 0 + key[i];
+			val += (int) key[i];
 	}
 	//se tem mais que 6 letras
 	else
 	{
-		int i;
 		//soma as 3 primeiras
 		for (i = 0; i < 3; i++)
 			val += (int) key[i];
 
 		//soma as 3 ultimas
-		for (i = 3; i > 0; i--)
-			val += (int) key[key_length - i];
+		for (i = 0; i < 3; i++)
+			val += (int) key[key_length - i - 1];
 	}
 
 	return val % table->num_places;
@@ -37,11 +36,11 @@ struct table_t *table_create(int n) {
 	if (n < 0)
 		return NULL;
 
-	struct table_t *table = ( struct table_t * ) malloc(sizeof( struct table_t ));
+	struct table_t *table = (struct table_t *) malloc(sizeof(struct table_t));
 
 	table->size = 0;
 	table->num_places = n;
-	table->places = (struct list_t **) malloc( sizeof( struct list_t *) * n );
+	table->places = (struct list_t **) malloc(sizeof(struct list_t *) * n);
 
 	int i;
 	for (i = 0; i < n; ++i)
@@ -58,7 +57,7 @@ void table_destroy(struct table_t *table){
 	int size = table->num_places;
 	int i;
 
-	for (i = 0; i < size; ++i)
+	for (i = 0; i < size; i++)
 		list_destroy(table->places[i]);
 
 	free(table);
@@ -74,12 +73,13 @@ int table_put(struct table_t *table, char *key, struct data_t *value){
 	int res;
 
 	// bucket sem lista
-	if ( table->places[pos] == NULL )
+	if (table->places[pos] == NULL)
 		table->places[pos] = list_create();
 
 	res = list_add(table->places[pos], entry);
+	entry_destroy(entry);
 
-	if( res == 0 )
+	if(res == 0)
 		table->size++;
 
 	return res;
