@@ -10,16 +10,11 @@
 
 
 int message_to_buffer(struct message_t *msg, char **msg_buf){
-	if (msg == NULL)
+	if (msg == NULL || validate_msg(msg) < 0)
 		return -1;
 
 	//obter opcode
 	short opcode = msg->opcode;
-
-	//validar opcode
-	if (validate_opcode(opcode) < 0)
-		return -1;
-
 	//obter c_type
 	short c_type = msg->c_type;
 
@@ -38,7 +33,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		memcpy(*msg_buf + offset, &result, INT_SIZE);
 	}
 	//CT_VALUE
-	else if( c_type == CT_VALUE){
+	else if(c_type == CT_VALUE){
 		size += INT_SIZE;
 		size += msg->content.data->datasize;
 
@@ -138,9 +133,6 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		offset += INT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.entry->value->data, pre_datasize);
 	}
-	// C_TYPE invalido
-	else
-		size = -1;
 
 	//OP_CODE
 	opcode = htons(opcode);
@@ -392,6 +384,36 @@ void free_message(struct message_t *message) {
 	free(message);
 }
 
+int validate_msg(struct message_t *msg) {
+	if (validate_opcode(msg->opcode) < 0)
+		return -1;
+
+	int valid_msg;
+
+	switch(msg->c_type) {
+		case CT_RESULT:
+			valid_msg = 0;
+			break;
+		case CT_VALUE:
+			valid_msg = validate_data(msg->content.data);
+			break;
+		case CT_KEY:
+			valid_msg = msg->content.key != NULL;
+			break;
+		case CT_KEYS:
+			valid_msg = msg->content.keys != NULL;
+			break;
+		case CT_ENTRY:
+			valid_msg = validate_entry(msg->content.entry);
+			break;
+		default:
+			valid_msg = -1;
+			break;
+	}
+
+	return valid_msg;
+}
+
 int validate_opcode(int opcode) {
 	if (opcode == OC_SIZE || opcode == OC_DEL || opcode == OC_UPDATE ||
 		opcode == OC_GET || opcode == OC_PUT)
@@ -401,20 +423,17 @@ int validate_opcode(int opcode) {
 }
 
 int validate_data(struct data_t *data) {
-	if (data->datasize < 0 || (data->datasize > 0 && data->data != NULL))
+	if (data == NULL || data->datasize < 0 || (data->datasize > 0 &&
+		data->data == NULL))
 		return -1;
 
 	return 0;
 }
 
-//TODO
 int validate_entry(struct entry_t *entry) {
+	if (entry == NULL || entry->key == NULL || validate_data(entry->value) < 0)
+		return -1;
+
 	return 0;
 }
-
-//TODO
-int validate_msg(struct message_t *msg) {
-	return 0;
-}
-
 
