@@ -8,7 +8,6 @@
 #include "message.h"
 #include "message-private.h"
 
-
 int message_to_buffer(struct message_t *msg, char **msg_buf){
 	if (msg == NULL || validate_msg(msg) < 0)
 		return -1;
@@ -22,18 +21,18 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 	int offset = size;
 
 	//CT_RESULT
-	if (c_type == CT_RESULT){
+	if ( c_type == CT_RESULT ){
 		size += INT_SIZE;
 		*msg_buf = (char *) malloc(size);
 
-		if (msg_buf == NULL)
+		if ( msg_buf == NULL )
 			return -1;
 
 		int result = htonl(msg->content.result);
 		memcpy(*msg_buf + offset, &result, INT_SIZE);
 	}
 	//CT_VALUE
-	else if(c_type == CT_VALUE){
+	else if( c_type == CT_VALUE ){
 		size += INT_SIZE;
 		size += msg->content.data->datasize;
 
@@ -43,6 +42,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 			return -1;
 
 		int datasize_htonl = htonl(msg->content.data->datasize);
+
 		memcpy(*msg_buf + offset, &datasize_htonl, INT_SIZE);
 		offset += INT_SIZE;
 
@@ -56,7 +56,7 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		*msg_buf = (char *) malloc(size);
 
-		if (msg_buf == NULL)
+		if ( msg_buf == NULL )
 			return -1;
 
 		int keysize_htons = htons(keysize);
@@ -86,17 +86,17 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 
 		// numero de keys
 		int nkeys = htonl(i);
-		memcpy(*msg_buf + offset, &nkeys, INT_SIZE);
+		memcpy( *msg_buf + offset, &nkeys, INT_SIZE );
 		offset += INT_SIZE;
 
-		for (i = 0; msg->content.keys[i] != NULL; i++)
+		for ( i = 0; msg->content.keys[i] != NULL; i++ )
 		{
-			int presize = strlen(msg->content.keys[i]);
-			int keysize = htons(presize);
-			memcpy(*msg_buf + offset, &keysize, SHORT_SIZE);
+			int presize = strlen( msg->content.keys[i] );
+			int keysize = htons( presize );
+			memcpy( *msg_buf + offset, &keysize, SHORT_SIZE );
 			offset += SHORT_SIZE;
 
-			memcpy(*msg_buf + offset, msg->content.keys[i], presize);
+			memcpy( *msg_buf + offset, msg->content.keys[i], presize );
 			offset += presize;
 		}
 	}
@@ -361,34 +361,38 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 
 void free_message(struct message_t *message) {
-	int i;
+	
+	if( message == NULL )
+		return;
 
-	switch(message->c_type) {
+	int i;
+	switch( message->c_type ) {
 		case CT_VALUE:
-			data_destroy(message->content.data);
+			data_destroy( message->content.data );
 			break;
 		case CT_ENTRY:
-			entry_destroy(message->content.entry);
+			entry_destroy( message->content.entry );
 			break;
 		case CT_KEY:
-			free(message->content.key);
+			free( message->content.key );
 			break;
 		case CT_KEYS:
-			for (i = 0; message->content.keys[i] != NULL; i++)
-				free(message->content.keys[i]);
+			for ( i = 0; message->content.keys[i] != NULL; i++ )
+				free( message->content.keys[i] );
 
-			free(message->content.keys);
+			free( message->content.keys );
 			break;
 	}
 
-	free(message);
+	free( message );
 }
 
 int validate_msg(struct message_t *msg) {
+
 	if (validate_opcode(msg->opcode) < 0)
 		return -1;
 
-	int valid_msg;
+	int valid_msg = -1;
 
 	switch(msg->c_type) {
 		case CT_RESULT:
@@ -406,9 +410,6 @@ int validate_msg(struct message_t *msg) {
 		case CT_ENTRY:
 			valid_msg = validate_entry(msg->content.entry);
 			break;
-		default:
-			valid_msg = -1;
-			break;
 	}
 
 	return valid_msg;
@@ -423,8 +424,7 @@ int validate_opcode(int opcode) {
 }
 
 int validate_data(struct data_t *data) {
-	if (data == NULL || data->datasize < 0 || (data->datasize > 0 &&
-		data->data == NULL))
+	if (data == NULL || data->datasize < 0 || data->data == NULL)
 		return -1;
 
 	return 0;
