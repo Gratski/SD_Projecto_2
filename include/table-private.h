@@ -1,6 +1,8 @@
 #ifndef _TABLE_PRIVATE_H
 #define _TABLE_PRIVATE_H
 
+#include "table.h"
+
 struct table_t{
 	int size;
 	int num_places;

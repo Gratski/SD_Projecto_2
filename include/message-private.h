@@ -5,6 +5,10 @@
 #define INT_SIZE  	4
 #define LONG_SIZE 	8
 
+#include "message.h"
+#include "entry.h"
+#include "data.h"
+
 /* Funcao que permite validar o opcode
  * de uma determinada mensagem
  * Devolve: 0 (OK), -1 (opcode invalido)

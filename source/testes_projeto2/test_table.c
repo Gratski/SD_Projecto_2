@@ -305,16 +305,17 @@ int main() {
 
 	score += testPutInexistente();
 
-//	score += testPutExistente();
+	score += testPutExistente();
 
+/*
 	score += testUpdate();
 
 	score += testDelInexistente();
 
 	score += testDelExistente();
 
-//	score += testGetKeys();
-
+	score += testGetKeys();
+*/
 	printf("Resultados do teste do módulo table: %d em 8\n\n", score);
 
 	return score;

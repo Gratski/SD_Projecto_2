@@ -4,7 +4,6 @@
 	Pedro Luís 		nº 45588
 */
 
-#include "list.h"
 #include "list-private.h"
 #include "entry.h"
 
@@ -79,16 +78,17 @@ int list_add(struct list_t *list, struct entry_t *entry){
 		// encontrar posicao para o novo no
 		do
 		{
-			str_cmp  = strcmp(entry->key, current->entry->key);
+			str_cmp  = strcmp( entry->key, current->entry->key );
 			previous = current;
 			current  = current->next;
 		} while( str_cmp > 0 && current != NULL );
 
 		// key jah presente na lista
-		if (str_cmp == 0)
+		if ( str_cmp == 0 ){
 			return -1;
+		}
 		// adicionar no ao final da lista
-		else if (current == NULL) {
+		else if ( current == NULL ) {
 			previous->next = node;
 			list->size++;
 		}

@@ -5,9 +5,7 @@
 
 #include "data.h"
 #include "entry.h"
-#include "message.h"
 #include "message-private.h"
-
 
 int message_to_buffer(struct message_t *msg, char **msg_buf){
 	if (msg == NULL || validate_msg(msg) < 0)

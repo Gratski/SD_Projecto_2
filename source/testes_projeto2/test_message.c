@@ -4,13 +4,13 @@
 #include <assert.h>
 #include <netinet/in.h>
 
-#include "list-private.h"
-#include "message-private.h"
+#include "list.h"
+#include "message.h"
 
 
 void print_message(struct message_t *msg) {
 	int i;
-
+	
 	printf("----- MESSAGE -----\n");
 	printf("opcode: %d, c_type: %d\n", msg->opcode, msg->c_type);
 	switch(msg->c_type) {
@@ -50,12 +50,12 @@ int testResult() {
 	msg->c_type = CT_RESULT;
 	msg->content.result = 1;
 	size = message_to_buffer(msg, &msg_str);
-
+	
 	opcode = htons(msg->opcode);
 	c_type = htons(msg->c_type);
 	res = htonl(msg->content.result);
 	result = memcmp(msg_str, &opcode, 2) == 0 &&
-		 memcmp(msg_str + 2, &c_type, 2) == 0 &&
+		 memcmp(msg_str + 2, &c_type, 2) == 0 && 
 		 memcmp(msg_str + 4, &res, 4) == 0;
 
 	free_message(msg);
@@ -220,7 +220,7 @@ int testEntry() {
 	free(datastr);
 
 	//print_message(msg);
-
+	
 	free_message(msg);
 
 	printf(" %s\n", result ? "passou" : "não passou");

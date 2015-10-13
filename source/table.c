@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "table.h"
+#include "list.h"
 #include "table-private.h"
 
 int hashcode(struct table_t *table, char *key){
@@ -32,7 +32,7 @@ int hashcode(struct table_t *table, char *key){
 
 
 struct table_t *table_create(int n) {
-	if (n < 0)
+	if (n <= 0)
 		return NULL;
 
 	struct table_t *table = (struct table_t *) malloc(sizeof(struct table_t));
@@ -84,11 +84,11 @@ int table_put(struct table_t *table, char *key, struct data_t *value){
 		table->places[pos] = list_create();
 
 	res = list_add(table->places[pos], entry);
-	entry_destroy(entry);
 
 	if(res == 0)
 		table->size++;
 
+	entry_destroy(entry);
 	return res;
 }
 
