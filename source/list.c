@@ -85,8 +85,6 @@ int list_add(struct list_t *list, struct entry_t *entry){
 			str_cmp  = strcmp( entry->key, current->entry->key );
 		}
 
-		str_cmp  = strcmp( entry->key, current->entry->key );
-
 		// key jah presente na lista
 		if ( str_cmp == 0 ){
 			return -1;
