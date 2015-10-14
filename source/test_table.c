@@ -265,7 +265,6 @@ int testGetKeys() {
 	data_destroy(d);
 
 	keys = table_get_keys(table);
-
 	for(i = 0; keys[i] != NULL; i++) {
 		achou = 0;
 		for(j = 0; j < 4; j++)

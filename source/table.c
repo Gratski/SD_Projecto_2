@@ -165,10 +165,10 @@ char **table_get_keys(struct table_t *table){
 		return NULL;
 
 	int i = 0;
-	int index = 0;
-	char **keys = (char **) malloc((sizeof(char *) * table->size) + 1);
-	for(i = 0; i < table->size; i++){
+	int num_keys = 0;
+	char **keys = (char **) malloc(sizeof(char *) * (table->size + 1));
 
+	for(i = 0; i < table->num_places; i++){
 		if(table->places[i] != NULL){
 			char **l = list_get_keys(table->places[i]);
 
@@ -177,8 +177,8 @@ char **table_get_keys(struct table_t *table){
 
 			int j;
 			for(j = 0; l[j] != NULL; j++){
-				keys[index] = strdup(l[j]);
-				index++;
+				keys[num_keys] = strdup(l[j]);
+				num_keys++;
 			}
 
 			list_free_keys(l);
