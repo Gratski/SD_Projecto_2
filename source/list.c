@@ -100,6 +100,11 @@ int list_add(struct list_t *list, struct entry_t *entry){
 		// str_cmp > 0
 		else {
 			//printf("entry: %s > current :%s\n", entry->key, current->entry->key);
+
+			// current nao eh no final
+			if (current->next != NULL)
+				node->next = current->next;
+
 			current->next = node;
 			list->size++;
 		}
