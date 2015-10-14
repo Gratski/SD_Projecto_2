@@ -23,6 +23,10 @@ test_table: $(O_FILES)/test_table.o $(O_FILES)/table.o $(O_FILES)/data.o $(O_FIL
 test_message: $(O_FILES)/test_message.o $(O_FILES)/list.o $(O_FILES)/message.o $(O_FILES)/data.o $(O_FILES)/entry.o
 	$(CC) $(CFLAGS) -o test_message $(O_FILES)/test_message.o $(O_FILES)/list.o $(O_FILES)/message.o $(O_FILES)/data.o $(O_FILES)/entry.o
 
+test_list: $(O_FILES)/test_list.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
+	$(CC) $(CFLAGS) -o test_list $(O_FILES)/test_list.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
+
+
 
 # Testes
 $(O_FILES)/test_message.o: $(C_FILES)/test_message.c $(H_FILES)/list-private.h $(H_FILES)/message-private.h
@@ -30,6 +34,9 @@ $(O_FILES)/test_message.o: $(C_FILES)/test_message.c $(H_FILES)/list-private.h $
 
 $(O_FILES)/test_table.o: $(C_FILES)/test_table.c $(H_FILES)/data.h $(H_FILES)/entry.h
 	$(CC) $(CFLAGS) -c $(C_FILES)/test_table.c -o $(O_FILES)/test_table.o
+
+$(O_FILES)/test_list.o: $(C_FILES)/test_list.c $(H_FILES)/list-private.h $(H_FILES)/list.h
+	$(CC) $(CFLAGS) -c $(C_FILES)/test_list.c -o $(O_FILES)/test_list.o
 
 $(O_FILES)/teste.o: $(C_FILES)/teste.c $(H_FILES)/table.h $(H_FILES)/message.h $(H_FILES)/list.h $(H_FILES)/list-private.h $(H_FILES)/entry.h $(H_FILES)/data.h
 	$(CC) $(CFLAGS) -c $(C_FILES)/teste.c -o $(O_FILES)/teste.o

@@ -92,17 +92,6 @@ int testPutExistente() {
 		table_put(table, key[i], data[i]);
 	}
 
-	printf("\nsize antes: %d\n", table_size(table));
-
-	struct data_t *my_data = table_get(table, "a/key/b-1003");
-	printf("data: %s\n", my_data->data);
-
-	// está a permitir duplicar o valor a/key/b-1003
-	data2[i] = data_create2(strlen("a/key/b-1004") + 1, "a/key/b-1003");
-	table_put(table, "a/key/b-1003", data2[i]);
-
-	printf("size depois: %d\n", table_size(table));
-
 	for(i=0; i<1024; i++) {
 		data2[i] = data_create2(strlen(key[i]) + 1, key[i]);
 		table_put(table, key[i], data2[i]);
@@ -314,7 +303,7 @@ int main() {
 
 	score += testDelExistente();
 
-//	score += testGetKeys();
+	score += testGetKeys();
 
 	printf("Resultados do teste do módulo table: %d em 8\n\n", score);
 

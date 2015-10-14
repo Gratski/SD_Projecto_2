@@ -58,44 +58,51 @@ int list_add(struct list_t *list, struct entry_t *entry){
 
 	struct node_t *current  = list->head;
 	struct node_t *previous = current;
+	int str_cmp;
 
 	// lista vazia
 	if (list->head == NULL) {
 		list->head = node;
 		list->size++;
 	}
-
 	// adicionar no ao inicio da lista se nao existe
 	else if (strcmp(entry->key, list->head->entry->key) < 0) {
 		node->next = list->head;
 		list->head = node;
 		list->size++;
 	}
-
 	else {
-		int str_cmp;
+		str_cmp = strcmp(entry->key, current->entry->key);
 
-		// encontrar posicao para o novo no
-		do
+		// encontrar posicao que a key excede
+		while( str_cmp > 0 && current->next != NULL )
 		{
-			str_cmp  = strcmp( entry->key, current->entry->key );
+			//printf("str_cmp: %d\n", strcmp( entry->key, current->entry->key ));
+			//printf("entry: %s, current :%s\n", entry->key, current->entry->key);
+
 			previous = current;
 			current  = current->next;
-		} while( str_cmp > 0 && current != NULL );
+			str_cmp  = strcmp( entry->key, current->entry->key );
+		}
+
+		str_cmp  = strcmp( entry->key, current->entry->key );
 
 		// key jah presente na lista
 		if ( str_cmp == 0 ){
 			return -1;
 		}
-		// adicionar no ao final da lista
-		else if ( current == NULL ) {
+		// adicionar no antes do no encontrado
+		else if (str_cmp < 0) {
+			//printf("entry: %s > current :%s\n", entry->key, current->entry->key);
 			previous->next = node;
+			node->next = current;
 			list->size++;
 		}
-		// adicionar no noutra posicao
+		// adicionar no depois do no encontrado
+		// str_cmp > 0
 		else {
-			node->next = current;
-			previous->next = node;
+			//printf("entry: %s > current :%s\n", entry->key, current->entry->key);
+			current->next = node;
 			list->size++;
 		}
 	}
