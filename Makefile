@@ -12,7 +12,8 @@ clean:
 	rm -f object/*.o
 	rm -f test_message
 	rm -f test_table
-
+	rm -f *~
+	rm -f source/*~
 
 teste_nosso: $(O_FILES)/teste.o $(O_FILES)/table.o $(O_FILES)/message.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
 	$(CC) $(CFLAGS) -o teste_nosso $(O_FILES)/teste.o $(O_FILES)/table.o $(O_FILES)/message.o $(O_FILES)/data.o $(O_FILES)/entry.o $(O_FILES)/list.o
