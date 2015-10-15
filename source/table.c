@@ -50,7 +50,7 @@ struct table_t *table_create(int n) {
 	}
 
 	int i;
-	for (i = 0; i < n; ++i)
+	for (i = 0; i < n; i++)
 		table->places[i] = NULL;
 
 	return table;
@@ -61,12 +61,12 @@ void table_destroy(struct table_t *table){
 	if (table == NULL)
 		return;
 
-	int size = table->num_places;
 	int i;
 
-	for (i = 0; i < size; i++)
+	for (i = 0; i < table->num_places; i++)
 		list_destroy(table->places[i]);
 
+	free(table->places);
 	free(table);
 }
 
@@ -166,7 +166,7 @@ char **table_get_keys(struct table_t *table){
 
 	int i = 0;
 	int num_keys = 0;
-	char **keys = (char **) malloc(sizeof(char *) * (table->size + 1));
+	char **keys = (char **) malloc(sizeof(char *) * (table_size(table) + 1));
 
 	for(i = 0; i < table->num_places; i++){
 		if(table->places[i] != NULL){
@@ -184,6 +184,8 @@ char **table_get_keys(struct table_t *table){
 			list_free_keys(l);
 		}
 	}
+
+	keys[table_size(table)] = NULL;
 
 	return keys;
 }

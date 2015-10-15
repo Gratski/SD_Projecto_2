@@ -47,7 +47,7 @@ int list_add(struct list_t *list, struct entry_t *entry){
 	if (list == NULL || entry == NULL)
 		return -1;
 
-	struct node_t* node = (struct node_t *) malloc(sizeof (struct node_t));
+	struct node_t *node = (struct node_t *) malloc(sizeof(struct node_t));
 
 	if (node == NULL)
 		return -1;
@@ -87,13 +87,15 @@ int list_add(struct list_t *list, struct entry_t *entry){
 
 		// key jah presente na lista
 		if ( str_cmp == 0 ){
+			entry_destroy(node->entry);
+			free(node);
 			return -1;
 		}
 		// adicionar no antes do no encontrado
 		else if (str_cmp < 0) {
 			//printf("entry: %s > current :%s\n", entry->key, current->entry->key);
 			previous->next = node;
-			node->next = current;
+			node->next     = current;
 			list->size++;
 		}
 		// adicionar no depois do no encontrado
