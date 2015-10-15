@@ -162,8 +162,10 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	offset += SHORT_SIZE;
 	opcode = ntohs(opcode);
 
-	if (validate_opcode(opcode) < 0)
+	if (validate_opcode(opcode) < 0) {
+		free(msg);
 		return NULL;
+	}
 
 	//ler c_type
 	memcpy(&c_type, msg_buf + offset, SHORT_SIZE);
