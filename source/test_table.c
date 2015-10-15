@@ -23,7 +23,7 @@ int testTabelaVazia() {
 	assert(table_create(0) == NULL);
 	result = table_create(0) == NULL;
 
-	result = result &&
+	result = result && 
 		 (table = table_create(5)) != NULL &&
 		 table_size(table) == 0;
 
@@ -70,7 +70,7 @@ int testPutInexistente() {
 	}
 
 	table_destroy(table);
-
+	
 	printf(" %s\n", result ? "passou" : "não passou");
 	return result;
 }
@@ -94,8 +94,9 @@ int testPutExistente() {
 
 	for(i=0; i<1024; i++) {
 		data2[i] = data_create2(strlen(key[i]) + 1, key[i]);
-		table_put(table, key[i], data2[i]);
+		table_put(table, key[i], data[i]);
 	}
+
 
 	assert(table_size(table) == 1024);
 	result = (table_size(table) == 1024);
@@ -107,7 +108,7 @@ int testPutExistente() {
 	}
 
 	table_destroy(table);
-
+	
 	printf(" %s\n", result ? "passou" : "não passou");
 	return result;
 }
@@ -138,11 +139,11 @@ int testUpdate() {
 	}
 
 	assert(table_size(table) == 1024);
-	result = (table_size(table) == 1024);
+	result = result && (table_size(table) == 1024);
 
 	for(i = 0; i < 1024; i++) {
 		d = table_get(table, key[i]);
-
+		
 		result = result &&
 			 d->datasize == data[i]->datasize &&
 			 memcmp(d->data, data[i]->data, d->datasize) == 0 &&
@@ -154,8 +155,8 @@ int testUpdate() {
 		free(key2[i]);
 	}
 
-	table_destroy(table);
-
+	table_destroy(table);	
+	
 	printf(" %s\n", result ? "passou" : "não passou");
 	return result;
 }
@@ -192,7 +193,7 @@ int testDelInexistente() {
 	result = result && (table_size(table) == 1024);
 
 	table_destroy(table);
-
+	
 	printf(" %s\n", result ? "passou" : "não passou");
 	return result;
 }
@@ -240,7 +241,7 @@ int testDelExistente() {
 	result = result && (table_size(table) == 1022);
 
 	table_destroy(table);
-
+	
 	printf(" %s\n", result ? "passou" : "não passou");
 	return result;
 }
@@ -265,7 +266,8 @@ int testGetKeys() {
 	data_destroy(d);
 
 	keys = table_get_keys(table);
-		for(i = 0; keys[i] != NULL; i++) {
+	
+	for(i = 0; keys[i] != NULL; i++) {
 		achou = 0;
 		for(j = 0; j < 4; j++)
 			achou = (achou || (strcmp(keys[i], k[j]) == 0));
