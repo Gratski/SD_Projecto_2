@@ -18,7 +18,6 @@ struct entry_t *entry_create(char *key, struct data_t *data){
 	e->key   = strdup(key);
 	e->value = data_dup(data);
 	return e;
-
 }
 
 void entry_destroy(struct entry_t *entry){
@@ -34,7 +33,6 @@ void entry_destroy(struct entry_t *entry){
 
 	// libertar entry
 	free(entry);
-
 }
 
 struct entry_t *entry_dup(struct entry_t *entry){

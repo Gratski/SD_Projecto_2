@@ -4,15 +4,17 @@
 ----- Pedro Luís 		nº 45588 -----
 -----------------------------------
 
+Nota:
+	Nesta fase do projecto foi necessário corrigir a funcao list_add devido a esta
+se encontrar a inserir dados repetidos.
+
 Para compilar todos os módulos de teste basta executar a seguinte instrução na raiz do projecto:
 	make
 
 Ou compilar cada módulo individualmente:
-   make test_data
-   make test_entry
-   make test_list
+   make test_table
+   make test_message
 
 Para correr os testes basta executar as seguintes instruções na raiz do projecto:
-   valgrind --track-origins=yes --tool=memcheck --leak-check=yes ./test_data
-   valgrind --track-origins=yes --tool=memcheck --leak-check=yes ./test_entry
-   valgrind --track-origins=yes --tool=memcheck --leak-check=yes ./test_list
+   valgrind --track-origins=yes --tool=memcheck --leak-check=yes ./test_table
+   valgrind --track-origins=yes --tool=memcheck --leak-check=yes ./test_message

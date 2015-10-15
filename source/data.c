@@ -24,6 +24,10 @@ struct data_t *data_create(int size){
 	// se conseguiu alocar
 	d->datasize = size;
 	d->data     = (void *) malloc(size);
+
+	if (d->data == NULL)
+		return NULL;
+
 	return d;
 
 }
