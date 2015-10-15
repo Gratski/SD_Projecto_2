@@ -124,6 +124,7 @@ int testUpdate() {
 	table = table_create(5);
 
 	for(i = 0; i < 1024; i++) {
+
 		key[i] = (char*) malloc(13 * sizeof(char));
 		sprintf(key[i], "a/key/b-%d", i);
 		key2[i] = (char*) malloc(14 * sizeof(char));

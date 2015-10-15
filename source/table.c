@@ -104,6 +104,7 @@ int table_update(struct table_t *table, char *key, struct data_t *value){
 	if (entry == NULL)
 		return -1;
 
+	data_destroy(entry->value);
 	entry->value = data_dup(value);
 
 	if (entry->value == NULL)
