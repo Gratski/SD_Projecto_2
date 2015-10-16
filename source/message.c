@@ -1,3 +1,9 @@
+/* 	-- Grupo 3 --
+	João Gouveia 	nº 45679
+	João Rodrigues	nº 45582
+	Pedro Luís 		nº 45588
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,10 +64,12 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		if ( msg_buf == NULL )
 			return -1;
 
+		//keysize
 		int keysize_htons = htons(keysize);
 		memcpy(*msg_buf + offset, &keysize_htons, SHORT_SIZE);
-
 		offset += SHORT_SIZE;
+
+		//key
 		memcpy(*msg_buf + offset, msg->content.key, keysize);
 	}
 	//CT_KEYS
@@ -118,18 +126,18 @@ int message_to_buffer(struct message_t *msg, char **msg_buf){
 		// keysize
 		int keysize_htons = htons(keysize);
 		memcpy(*msg_buf + offset, &keysize_htons, SHORT_SIZE);
+		offset += SHORT_SIZE;
 
 		// key em si
-		offset += SHORT_SIZE;
 		memcpy(*msg_buf + offset, msg->content.entry->key, keysize);
+		offset += strlen(msg->content.entry->key);
 
 		int pre_datasize = msg->content.entry->value->datasize;
 		int datasize = htonl(pre_datasize);
 
-		offset += strlen(msg->content.entry->key);
 		memcpy(*msg_buf + offset, &datasize, INT_SIZE);
-
 		offset += INT_SIZE;
+
 		memcpy(*msg_buf + offset, msg->content.entry->value->data, pre_datasize);
 	}
 
@@ -149,12 +157,12 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	if (msg_buf == NULL || msg_size < 0)
 		return NULL;
 
-	short opcode, c_type;
 	struct message_t *msg = (struct message_t *) malloc(sizeof(struct message_t));
 
 	if (msg == NULL)
 		return NULL;
 
+	short opcode, c_type;
 	int offset = 0, buffer_size;
 
 	//ler opcode
@@ -190,9 +198,9 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 	else if( c_type == CT_VALUE ) {
 		int datasize;
 		memcpy(&datasize, msg_buf + offset, INT_SIZE);
-		datasize = ntohl(datasize);
-
 		offset += INT_SIZE;
+
+		datasize = ntohl(datasize);
 		msg->content.data = (struct data_t *) malloc(sizeof(struct data_t));
 
 		if (msg->content.data == NULL) {
@@ -209,16 +217,15 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		}
 
 		memcpy(msg->content.data->data, msg_buf + offset, datasize);
-
 		buffer_size = offset + datasize;
 	}
 	//CT_KEY
 	else if(c_type == CT_KEY){
 		int keysize;
 		memcpy(&keysize, msg_buf + offset, SHORT_SIZE);
-		keysize = ntohs(keysize);
-
 		offset += SHORT_SIZE;
+
+		keysize = ntohs(keysize);
 		msg->content.key = (char *) malloc(keysize + 1);
 
 		if (msg->content.key == NULL) {
@@ -238,8 +245,8 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 		int num_keys;
 		memcpy(&num_keys, msg_buf + offset, INT_SIZE);
 		offset += INT_SIZE;
-		num_keys = ntohl(num_keys);
 
+		num_keys = ntohl(num_keys);
 		msg->content.keys = (char **) malloc(sizeof(char *) * (num_keys + 1));
 
 		if (msg->content.keys == NULL) {
@@ -362,7 +369,6 @@ struct message_t *buffer_to_message(char *msg_buf, int msg_size){
 
 
 void free_message(struct message_t *message) {
-	
 	if( message == NULL )
 		return;
 
@@ -387,6 +393,7 @@ void free_message(struct message_t *message) {
 
 	free( message );
 }
+
 
 int validate_msg(struct message_t *msg) {
 
@@ -416,6 +423,7 @@ int validate_msg(struct message_t *msg) {
 	return valid_msg;
 }
 
+
 int validate_opcode(int opcode) {
 	if (opcode == OC_SIZE || opcode == OC_DEL || opcode == OC_UPDATE ||
 		opcode == OC_GET || opcode == OC_PUT)
@@ -424,12 +432,14 @@ int validate_opcode(int opcode) {
 	return -1;
 }
 
+
 int validate_data(struct data_t *data) {
 	if (data == NULL || data->datasize < 0 || data->data == NULL)
 		return -1;
 
 	return 0;
 }
+
 
 int validate_entry(struct entry_t *entry) {
 	if (entry == NULL || entry->key == NULL || validate_data(entry->value) < 0)

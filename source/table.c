@@ -1,3 +1,9 @@
+/* 	-- Grupo 3 --
+	João Gouveia 	nº 45679
+	João Rodrigues	nº 45582
+	Pedro Luís 		nº 45588
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +12,9 @@
 #include "table-private.h"
 
 int hashcode(struct table_t *table, char *key){
+	if (table == NULL || key == NULL)
+		return -1;
+
 	int i, val = 0;
 	int key_length = strlen(key);
 
@@ -50,6 +59,7 @@ struct table_t *table_create(int n) {
 	}
 
 	int i;
+	// inicializar buckets a NULL
 	for (i = 0; i < n; i++)
 		table->places[i] = NULL;
 
@@ -169,14 +179,18 @@ char **table_get_keys(struct table_t *table){
 	int num_keys = 0;
 	char **keys = (char **) malloc(sizeof(char *) * (table_size(table) + 1));
 
+	// percorrer cada bucket da table
 	for(i = 0; i < table->num_places; i++){
+		// bucket foi inicializado
 		if(table->places[i] != NULL){
 			char **l = list_get_keys(table->places[i]);
 
+			// bucket nao inicializado
 			if (l == NULL)
 				return NULL;
 
 			int j;
+			// percorrer cada key da lista
 			for(j = 0; l[j] != NULL; j++){
 				keys[num_keys] = strdup(l[j]);
 				num_keys++;
@@ -186,6 +200,7 @@ char **table_get_keys(struct table_t *table){
 		}
 	}
 
+	// terminar array de keys
 	keys[table_size(table)] = NULL;
 
 	return keys;
